@@ -1,0 +1,104 @@
+﻿@model MiniaturesGallery.ViewModels.PostEditViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Post</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Post.ID" />
+            <div class="form-group">
+                <label asp-for="Post.Topic" class="control-label"></label>
+                <input asp-for="Post.Topic" class="form-control" />
+                <span asp-validation-for="Post.Topic" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.Text" class="control-label"></label>
+                <input asp-for="Post.Text" class="form-control" />
+                <span asp-validation-for="Post.Text" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+
+        <hr />
+        <h5>Attachments:</h5>
+        @foreach (var att in Model.Post.Attachments)
+        {
+            <div style="margin-top: 5px">
+                <a style="margin-right: 5px" href="~/Files/@att.FullFileName">@att.FileName</a>
+                <form method="post" asp-controller="Testy" asp-action="DeleteAttachment" asp-route-id="@att.ID" data-confirm="Are you sure you want to delete this attachment?" style="display: contents">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        }
+        <hr />
+        <form asp-action="AddAttachment" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="@Model.Post.ID" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label class="control-label">Add Attachments:</label>
+                <div class="custom-file">
+                    <input asp-for="Files" placeholder="" multiple class="form-control custom-file-input" />
+                    <label class="custom-file-label">Chose files...</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Add Chosen Files" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.custom-file-input').on("change", function () {
+                var fileLabel = $(this).next('.custom-file-label');
+                var files = $(this)[0].files;
+                if (files.length > 1) {
+                    fileLabel.html(files.length + ' files selected');
+                }
+                else if (files.length == 1) {
+                    fileLabel.html(files[0].name);
+                }
+            });
+        });
+
+        $(document).on('click', ':not(form)[data-confirm]', function(e){
+            if(!confirm($(this).data('confirm'))){
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        });
+
+        $(document).on('submit', 'form[data-confirm]', function(e){
+            if(!confirm($(this).data('confirm'))){
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        });
+
+        $(document).on('input', 'select', function(e){
+            var msg = $(this).children('option:selected').data('confirm');
+            if(msg != undefined && !confirm(msg)){
+                $(this)[0].selectedIndex = 0;
+            }
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }
