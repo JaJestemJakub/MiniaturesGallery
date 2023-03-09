@@ -31,15 +31,23 @@
 
         <hr />
         <h5>Attachments:</h5>
+    </div>
+
+    <div class="col-12">
+        <div class="col-md-6">
         @foreach (var att in Model.Post.Attachments)
         {
+            <img class="rounded mx-auto d-block img-thumbnail" src="~/Files/@att.FullFileName" alt="@att.FileName" />
             <div style="margin-top: 5px">
                 <a style="margin-right: 5px" href="~/Files/@att.FullFileName">@att.FileName</a>
                 <form method="post" asp-controller="Testy" asp-action="DeleteAttachment" asp-route-id="@att.ID" data-confirm="Are you sure you want to delete this attachment?" style="display: contents">
                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </form>
-            </div>
+            </div>       
         }
+        </div>
+    </div>
+    <div class="col-md-4">
         <hr />
         <form asp-action="AddAttachment" enctype="multipart/form-data">
             <input type="hidden" name="id" value="@Model.Post.ID" />
@@ -47,7 +55,7 @@
             <div class="form-group">
                 <label class="control-label">Add Attachments:</label>
                 <div class="custom-file">
-                    <input asp-for="Files" placeholder="" multiple class="form-control custom-file-input" />
+                    <input asp-for="Files" placeholder="" multiple class="form-control custom-file-input" accept="image/png, image/gif, image/jpeg" />
                     <label class="custom-file-label">Chose files...</label>
                 </div>
             </div>

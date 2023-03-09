@@ -171,16 +171,19 @@ namespace MiniaturesGallery.Controllers
                 {
                     foreach (IFormFile f in postViewModel.Files)
                     {
-                        string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", id.ToString());
-                        if (Directory.Exists(FolderPath) == false)
-                            Directory.CreateDirectory(FolderPath);
-                        string FolderSlashFile = Path.Combine(id.ToString(), f.FileName);
-                        string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile);
+                        if(f.IsImage())
+                        {
+                            string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", id.ToString());
+                            if (Directory.Exists(FolderPath) == false)
+                                Directory.CreateDirectory(FolderPath);
+                            string FolderSlashFile = Path.Combine(id.ToString(), f.FileName);
+                            string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile);
 
-                        using (FileStream fs = new FileStream(FilePath, FileMode.Create))
-                            f.CopyTo(fs);
-                        Attachment att = new Attachment { FileName = f.FileName, FullFileName = FolderSlashFile, PostID = id };
-                        _context.Add(att);
+                            using (FileStream fs = new FileStream(FilePath, FileMode.Create))
+                                f.CopyTo(fs);
+                            Attachment att = new Attachment { FileName = f.FileName, FullFileName = FolderSlashFile, PostID = id };
+                            _context.Add(att);
+                        }
                     }
                     await _context.SaveChangesAsync();
                 }
