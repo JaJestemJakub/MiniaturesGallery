@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MiniaturesGallery
+namespace MiniaturesGallery.Extensions
 {
     public static class FormFileExtensions
     {

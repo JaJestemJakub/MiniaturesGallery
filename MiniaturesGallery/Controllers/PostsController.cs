@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.Internal;
 using MiniaturesGallery.Data;
+using MiniaturesGallery.Extensions;
 using MiniaturesGallery.Models;
 using MiniaturesGallery.ViewModels;
 
@@ -62,6 +63,7 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
+                post.UserID = User.GetLoggedInUserId<string>();
                 _context.Add(post);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -151,9 +153,23 @@ namespace MiniaturesGallery.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Posts'  is null.");
             }
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts.Include(a => a.Attachments)
+                .FirstAsync(x => x.ID == id);
             if (post != null)
             {
+                if(post.Attachments != null && post.Attachments.Any()) //Delete all attachments if any
+                {
+                    string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", post.ID.ToString());
+                    foreach (var att in post.Attachments)
+                    {
+                        string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", att.FullFileName);
+                        
+                        System.IO.File.Delete(FilePath);
+                    }
+                    string[] files = Directory.GetFiles(FolderPath);
+                    if (files.Length == 0)
+                        Directory.Delete(FolderPath);
+                }
                 _context.Posts.Remove(post);
             }
             
@@ -181,7 +197,7 @@ namespace MiniaturesGallery.Controllers
 
                             using (FileStream fs = new FileStream(FilePath, FileMode.Create))
                                 f.CopyTo(fs);
-                            Attachment att = new Attachment { FileName = f.FileName, FullFileName = FolderSlashFile, PostID = id };
+                            Attachment att = new Attachment(User.GetLoggedInUserId<string>()) { FileName = f.FileName, FullFileName = FolderSlashFile, PostID = id };
                             _context.Add(att);
                         }
                     }
@@ -197,7 +213,7 @@ namespace MiniaturesGallery.Controllers
         {
             Attachment att = await _context.Attachments
                 .Include(a => a.Post)
-                .FirstOrDefaultAsync(x => x.ID == id);
+                .FirstAsync(x => x.ID == id);
             _context.Attachments.Remove(att);
 
             string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", att.FullFileName);
