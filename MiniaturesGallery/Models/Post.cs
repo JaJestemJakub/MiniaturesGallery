@@ -10,7 +10,10 @@ namespace MiniaturesGallery.Models
         public int ID { get; set; }
         public string? Topic { get; set; }
         public string? Text { get; set; }
+        public float Rating { get; set; }
 
         public ICollection<Attachment>? Attachments { get; set; }
+        public ICollection<Comment>? Coments { get; set; }
+        public ICollection<Rate>? Rates { get; set; }
     }
 }

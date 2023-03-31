@@ -13,5 +13,7 @@ namespace MiniaturesGallery.Data
 
         public DbSet<Post> Posts { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Rate> Rates { get; set; }
     }
 }

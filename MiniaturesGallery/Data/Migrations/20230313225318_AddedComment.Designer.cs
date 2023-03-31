@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniaturesGallery.Data;
 
@@ -11,13 +12,14 @@ using MiniaturesGallery.Data;
 namespace MiniaturesGallery.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230313225318_AddedComment")]
+    partial class AddedComment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.15")
+                .HasAnnotation("ProductVersion", "6.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -277,8 +279,6 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("CommentID");
 
-                    b.HasIndex("PostID");
-
                     b.ToTable("Comments");
                 });
 
@@ -290,8 +290,8 @@ namespace MiniaturesGallery.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
 
-                    b.Property<float>("Rating")
-                        .HasColumnType("real");
+                    b.Property<int?>("PostID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
@@ -305,32 +305,9 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("MiniaturesGallery.Models.Rate", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
-
-                    b.Property<int>("PostID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ID");
-
                     b.HasIndex("PostID");
 
-                    b.ToTable("Rates");
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -400,21 +377,13 @@ namespace MiniaturesGallery.Data.Migrations
                     b.HasOne("MiniaturesGallery.Models.Comment", null)
                         .WithMany("Comments")
                         .HasForeignKey("CommentID");
-
-                    b.HasOne("MiniaturesGallery.Models.Post", null)
-                        .WithMany("Coments")
-                        .HasForeignKey("PostID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
-            modelBuilder.Entity("MiniaturesGallery.Models.Rate", b =>
+            modelBuilder.Entity("MiniaturesGallery.Models.Post", b =>
                 {
                     b.HasOne("MiniaturesGallery.Models.Post", null)
-                        .WithMany("Rates")
-                        .HasForeignKey("PostID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Posts")
+                        .HasForeignKey("PostID");
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Comment", b =>
@@ -426,9 +395,7 @@ namespace MiniaturesGallery.Data.Migrations
                 {
                     b.Navigation("Attachments");
 
-                    b.Navigation("Coments");
-
-                    b.Navigation("Rates");
+                    b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618
         }

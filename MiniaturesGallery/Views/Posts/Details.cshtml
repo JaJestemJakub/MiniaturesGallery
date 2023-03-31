@@ -1,8 +1,45 @@
 ﻿@model MiniaturesGallery.Models.Post
 
+@using MiniaturesGallery.Extensions
+@using MiniaturesGallery.Models
 @{
     ViewData["Title"] = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    
+}
+@functions{
+    private async Task PresentCommentsRecursively(ICollection<Comment> comments)
+    {
+    @foreach (var comm in comments)
+        {
+    <div class="card border-primary ms-3">
+                        <div class="card-header">@comm.UserID</div>
+                        <div class="card-body text-primary">
+                            <p class="card-text">@comm.Body</p>
+                        </div>             
+    </div>
+    <div class="col-md-4 ms-3">
+                        <form asp-action="Create" asp-controller="Comments">
+                            <input hidden name="@(nameof(Comment.PostID))" value="@comm.PostID" />
+                            <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                            <input hidden name="@(nameof(Comment.CommentID))" value="@comm.ID" />
+                            <div class="form-group">
+                                <label class="control-label">@(nameof(Comment.Body))</label>
+                                <input name="@(nameof(Comment.Body))" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" value="Create" class="btn btn-primary" />
+                            </div>
+                        </form>
+    </div>
+            if (comm.Comments != null)
+            {
+    <div class="ms-3">
+                            @{PresentCommentsRecursively(comm.Comments);}
+    </div>
+            }
+        }
+    }
 }
 
 <h1>Details</h1>
@@ -24,6 +61,120 @@
             @Html.DisplayFor(model => model.Text)
         </dd>
     </dl>
+    <div class="row">
+        <div id="carouselImages" class="carousel slide carousel-dark carousel-fade" data-bs-ride="carousel" data-bs-interval="false">
+            <div class="carousel-inner">
+                @foreach (var att in Model.Attachments)
+                {
+                    string activeAttribute = "";
+                    if (att == Model.Attachments.First())
+                        activeAttribute = "active";
+                    <div class="carousel-item @activeAttribute d-flex align-items-center justify-content-center" style="height: 500px">
+                        <a href="~/Files/@att.FullFileName">
+                            <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block w-80" style="max-height: 500px">
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="d-flex justify-content-center">
+                @{
+                    int iterator = 0;
+                    foreach (var att in Model.Attachments)
+                    {
+                        string cssClass = "";
+                        string cssAria = "";
+                        if (att == Model.Attachments.First())
+                        {
+                            cssClass = "active";
+                            cssAria = "true";
+                        }
+
+                        <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="@iterator" class="@cssClass" aria-current="@cssAria">
+                            <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block" style="max-height: 50px; max-width: 50px">
+                        </button>
+                        iterator++;
+                    }
+                }
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+        @{
+            string action = "Create", checked5 = "", checked4 = "", checked3 = "", checked2 = "", checked1 = "";
+            int rating = (int)Math.Floor(Model.Rating);
+            if (Model.Rates.Any())
+            {
+                action = "Edit";
+                rating = Model.Rates.First().Rating;
+            }
+            switch (rating)
+            {
+                case 1:
+                    checked1 = "checked";
+                    break;
+                case 2:
+                    checked2 = "checked";
+                    break;
+                case 3:
+                    checked3 = "checked";
+                    break;
+                case 4:
+                    checked4 = "checked";
+                    break;
+                case 5:
+                    checked5 = "checked";
+                    break;
+            }
+        }
+        <form asp-action="@action" asp-controller="Rates">
+            Rating: @Model.Rating.ToString("n2")
+            <div class="rating">
+                @if (Model.Rates.Any())
+                {
+                    <input hidden name="@(nameof(Rate.ID))" value="@Model.Rates.First().ID" />
+                }
+                <input hidden name="@(nameof(Rate.PostID))" value="@Model.ID" />
+                <input hidden name="@(nameof(Rate.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                <input type="radio" name="rating" value="5" id="5" @checked5>
+                <label for="5">☆</label>
+                <input type="radio" name="rating" value="4" id="4" @checked4>
+                <label for="4">☆</label>
+                <input type="radio" name="rating" value="3" id="3" @checked3>
+                <label for="3">☆</label>
+                <input type="radio" name="rating" value="2" id="2" @checked2>
+                <label for="2">☆</label>
+                <input type="radio" name="rating" value="1" id="1" @checked1>
+                <label for="1">☆</label>
+            </div>
+            <input type="submit" value="Submit" class="btn btn-primary" />
+        </form>
+
+        <div class="col-md-12">
+            <h5>Comments:</h5>
+            @{PresentCommentsRecursively(Model.Coments);}
+        </div>
+        <div class="col-md-4">
+            <form asp-action="Create" asp-controller="Comments">
+                <input hidden name="@(nameof(Comment.PostID))" value="@Model.ID" />
+                <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                <input hidden name="@(nameof(Comment.CommentID))" value="" />
+                <div class="form-group">
+                    <label class="control-label">@(nameof(Comment.Body))</label>
+                    <input name="@(nameof(Comment.Body))" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a> |

@@ -37,12 +37,33 @@ namespace MiniaturesGallery.Controllers
             {
                 return NotFound();
             }
-
+            
             var post = await _context.Posts
+                .Include(a => a.Attachments)
+                .Include(a => a.Coments)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (post == null)
             {
                 return NotFound();
+            }
+
+            foreach(var comment in post.Coments)
+            {
+                if(comment.CommentID != null)
+                {
+                    var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
+                    if (parent != null)
+                    {
+                        parent.Comments.Add(comment);                     
+                    }
+                    post.Coments.Remove(comment);
+                }
+            }
+
+            post.Rates = new List<Rate>();
+            if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
+            {
+                post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()));
             }
 
             return View(post);
@@ -153,7 +174,9 @@ namespace MiniaturesGallery.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Posts'  is null.");
             }
-            var post = await _context.Posts.Include(a => a.Attachments)
+            var post = await _context.Posts
+                .Include(a => a.Attachments)
+                .Include(a => a.Coments)
                 .FirstAsync(x => x.ID == id);
             if (post != null)
             {
