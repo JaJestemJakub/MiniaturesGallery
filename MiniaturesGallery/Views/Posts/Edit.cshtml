@@ -1,14 +1,18 @@
 ﻿@model MiniaturesGallery.ViewModels.PostEditViewModel
 
+@using MiniaturesGallery.Extensions
+@using MiniaturesGallery.Models
 @{
     ViewData["Title"] = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
-
-<h4>Post</h4>
-<hr />
+<h4 style="display: inline;">
+    [<a asp-action="Details" asp-route-id="@Model.Post.ID" class="text-secondary">Details</a>]
+</h4>
+<h4 style="display: inline;">
+    [<a asp-action="Delete" asp-route-id="@Model.Post.ID" class="text-danger">Delete</a>]
+</h4>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
@@ -19,41 +23,101 @@
                 <input asp-for="Post.Topic" class="form-control" />
                 <span asp-validation-for="Post.Topic" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <hr />
+            <h6>@Html.DisplayFor(model => model.Post.CrateDate)</h6>
+            <div class="form-group mb-2">
                 <label asp-for="Post.Text" class="control-label"></label>
-                <input asp-for="Post.Text" class="form-control" />
+                <textarea asp-for="Post.Text" class="form-control" rows="4"></textarea>
                 <span asp-validation-for="Post.Text" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
-
-        <hr />
-        <h5>Attachments:</h5>
     </div>
 
-    <div class="col-12">
-        <div class="col-md-6">
-        @foreach (var att in Model.Post.Attachments)
-        {
-            <img class="rounded mx-auto d-block img-thumbnail" src="~/Files/@att.FullFileName" alt="@att.FileName" />
-            <div style="margin-top: 5px">
-                <a style="margin-right: 5px" href="~/Files/@att.FullFileName">@att.FileName</a>
-                <form method="post" asp-controller="Testy" asp-action="DeleteAttachment" asp-route-id="@att.ID" data-confirm="Are you sure you want to delete this attachment?" style="display: contents">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </div>       
-        }
+    <hr />
+    <h5>Photos:</h5>
+    <div id="carouselImages" class="carousel slide carousel-dark carousel-fade" data-bs-ride="carousel" data-bs-interval="false">
+        <div class="carousel-inner">
+            @foreach (var att in Model.Post.Attachments)
+            {
+                string activeAttribute = "";
+                if (att == Model.Post.Attachments.First())
+                    activeAttribute = "active";
+                <div class="carousel-item @activeAttribute d-flex flex-column justify-content-center" style="height: 531px">
+                    <div class="d-flex align-self-center" style="height: 500px">
+                        <a data-bs-toggle="modal" href="#imageModal_@att.ID" class="align-self-center">
+                            <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block w-80" style="max-height: 500px">
+                        </a>
+                    </div>
+                    <div class="text-center">
+                        <a style="margin-right: 5px" href="~/Files/@att.FullFileName">@att.FileName</a>
+                        <form method="post" asp-controller="Posts" asp-action="DeleteAttachment" asp-route-id="@att.ID" data-confirm="Are you sure you want to delete this attachment?" style="display: contents">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal fade" tabindex="-1" aria-hidden="true" id="imageModal_@att.ID">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">@att.FileName</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body d-flex align-items-center justify-content-center">
+                                <img src="~/Files/@att.FullFileName" alt="@att.FileName">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
+        <div class="d-flex justify-content-center">
+            @{
+                int iterator = 0;
+                foreach (var att in Model.Post.Attachments)
+                {
+                    string cssClass = "";
+                    string cssAria = "";
+                    if (att == Model.Post.Attachments.First())
+                    {
+                        cssClass = "active";
+                        cssAria = "true";
+                    }
+
+                    <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="@iterator" class="@cssClass" aria-current="@cssAria">
+                        <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block" style="max-height: 50px; max-width: 50px">
+                    </button>
+                    iterator++;
+                }
+            }
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
+
+    <div class="text-center">
+        Rating: @Model.Post.Rating.ToString("n2") (@Model.Post.NoOfRates.ToString())
+    </div>
+
+    <hr />
+
     <div class="col-md-4">
-        <hr />
         <form asp-action="AddAttachment" enctype="multipart/form-data">
             <input type="hidden" name="id" value="@Model.Post.ID" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label class="control-label">Add Attachments:</label>
+                <label class="control-label">Add Photo:</label>
                 <div class="custom-file">
                     <input asp-for="Files" placeholder="" multiple class="form-control custom-file-input" accept="image/png, image/gif, image/jpeg" />
                     <label class="custom-file-label">Chose files...</label>
@@ -64,10 +128,6 @@
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

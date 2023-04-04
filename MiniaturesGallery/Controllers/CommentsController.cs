@@ -61,6 +61,7 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
+                comment.CrateDate = DateTime.Now;
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = comment.PostID });
@@ -89,7 +90,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Body,PostID,CommentID,UserID")] Comment comment)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Body")] Comment comment)
         {
             if (id != comment.ID)
             {
@@ -100,7 +101,9 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    _context.Update(comment);
+                    Comment commentFromDB = await _context.Comments.FirstAsync(x => x.ID == comment.ID);
+                    commentFromDB.Body = comment.Body;
+                    _context.Update(commentFromDB);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
