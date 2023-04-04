@@ -10,57 +10,56 @@
 @functions{
     private async Task PresentCommentsRecursively(ICollection<Comment> comments)
     {
-    @foreach (var comm in comments)
+        @foreach (var comm in comments)
         {
-    <div class="card border-primary ms-3">
-                        <div class="card-header">@comm.UserID</div>
-                        <div class="card-body text-primary">
-                            <p class="card-text">@comm.Body</p>
-                        </div>             
-    </div>
-    <div class="col-md-4 ms-3">
-                        <form asp-action="Create" asp-controller="Comments">
-                            <input hidden name="@(nameof(Comment.PostID))" value="@comm.PostID" />
-                            <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
-                            <input hidden name="@(nameof(Comment.CommentID))" value="@comm.ID" />
-                            <div class="form-group">
-                                <label class="control-label">@(nameof(Comment.Body))</label>
-                                <input name="@(nameof(Comment.Body))" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <input type="submit" value="Create" class="btn btn-primary" />
-                            </div>
-                        </form>
-    </div>
+            <div class="card border-dark">
+                <div class="card-header"><h3>@if(comm.User != null){<p>@comm.User.UserName</p>} else{<p>Guest</p>}</h3></div>
+                <div class="card-body">
+                    <p class="card-text">@comm.Body</p>
+                </div>             
+            </div>
+            <div class="">
+                @comm.CrateDate [<a data-bs-toggle="collapse" href="#collapseAddComment_@comm.ID">Answer</a>] 
+                @if(comm.Comments != null){<div style="display: inline;">[<a data-bs-toggle="collapse" href="#collapseShowCommentsOf_@comm.ID">Show Answers (@comm.Comments.Count())</a>]</div>}
+            </div>
+            <div class="col-md-4 ms-5 m-2 collapse" id="collapseAddComment_@comm.ID">
+                <form asp-action="Create" asp-controller="Comments">
+                    <input hidden name="@(nameof(Comment.PostID))" value="@comm.PostID" />
+                    <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                    <input hidden name="@(nameof(Comment.CommentID))" value="@comm.ID" />
+                    <div class="">
+                        <label class="control-label">Add Comment:</label>
+                        <input name="@(nameof(Comment.Body))" class="form-control" />
+                    </div>
+                    <div class="d-flex justify-content-center mt-2">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
             if (comm.Comments != null)
             {
-    <div class="ms-3">
-                            @{PresentCommentsRecursively(comm.Comments);}
-    </div>
+                <div class="collapse ms-5" id="collapseShowCommentsOf_@comm.ID">
+                    @{PresentCommentsRecursively(comm.Comments);}
+                </div>
             }
         }
     }
 }
 
-<h1>Details</h1>
-
 <div>
-    <h4>Post</h4>
+    <div class="text-center align-items-center">
+        <h1 style="display: inline;">@Html.DisplayFor(model => model.Topic)</h1>
+        @if (User.GetLoggedInUserId<string>() == Model.UserID)
+        {
+            <h4 style="display: inline;">
+                [<a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a>]
+            </h4>       
+            <h4 style="display: inline;">
+                [<a asp-action="Delete" asp-route-id="@Model?.ID" class="text-danger">Delete</a>]
+            </h4>    
+        }
+    </div>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Topic)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Topic)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Text)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Text)
-        </dd>
-    </dl>
     <div class="row">
         <div id="carouselImages" class="carousel slide carousel-dark carousel-fade" data-bs-ride="carousel" data-bs-interval="false">
             <div class="carousel-inner">
@@ -70,9 +69,26 @@
                     if (att == Model.Attachments.First())
                         activeAttribute = "active";
                     <div class="carousel-item @activeAttribute d-flex align-items-center justify-content-center" style="height: 500px">
-                        <a href="~/Files/@att.FullFileName">
+                        <a data-bs-toggle="modal" href="#imageModal_@att.ID">
                             <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block w-80" style="max-height: 500px">
                         </a>
+                    </div>
+
+                    <div class="modal fade" tabindex="-1" aria-hidden="true" id="imageModal_@att.ID">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">@att.FileName</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body d-flex align-items-center justify-content-center">
+                                    <img src="~/Files/@att.FullFileName" alt="@att.FileName">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
@@ -134,49 +150,56 @@
             }
         }
         <form asp-action="@action" asp-controller="Rates">
-            Rating: @Model.Rating.ToString("n2")
-            <div class="rating">
+            <div class="text-center">
+                Rating: @Model.Rating.ToString("n2") (@Model.NoOfRates.ToString())
+            </div>
+            <div class="rating justify-content-center">
                 @if (Model.Rates.Any())
                 {
                     <input hidden name="@(nameof(Rate.ID))" value="@Model.Rates.First().ID" />
                 }
                 <input hidden name="@(nameof(Rate.PostID))" value="@Model.ID" />
                 <input hidden name="@(nameof(Rate.UserID))" value="@(User.GetLoggedInUserId<string>())" />
-                <input type="radio" name="rating" value="5" id="5" @checked5>
+                <input type="radio" name="rating" value="5" id="5" @checked5 onclick="$('#collapseSubmitRateButton').collapse('show');">
                 <label for="5">☆</label>
-                <input type="radio" name="rating" value="4" id="4" @checked4>
+                <input type="radio" name="rating" value="4" id="4" @checked4 onclick="$('#collapseSubmitRateButton').collapse('show');">
                 <label for="4">☆</label>
-                <input type="radio" name="rating" value="3" id="3" @checked3>
+                <input type="radio" name="rating" value="3" id="3" @checked3 onclick="$('#collapseSubmitRateButton').collapse('show');">
                 <label for="3">☆</label>
-                <input type="radio" name="rating" value="2" id="2" @checked2>
+                <input type="radio" name="rating" value="2" id="2" @checked2 onclick="$('#collapseSubmitRateButton').collapse('show');">
                 <label for="2">☆</label>
-                <input type="radio" name="rating" value="1" id="1" @checked1>
+                <input type="radio" name="rating" value="1" id="1" @checked1 onclick="$('#collapseSubmitRateButton').collapse('show');">
                 <label for="1">☆</label>
             </div>
-            <input type="submit" value="Submit" class="btn btn-primary" />
+            <div class="text-center mb-2">
+                <input type="submit" value="Submit" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton" />
+            </div>
         </form>
 
+        <hr />
+        <h6>@Html.DisplayFor(model => model.User.UserName)</h6>
+        <h6>@Html.DisplayFor(model => model.CrateDate)</h6>
+        <h4 style="white-space: pre-line">@Html.DisplayFor(model => model.Text)</h4>
+
+        <hr />
         <div class="col-md-12">
             <h5>Comments:</h5>
+            [<a data-bs-toggle="collapse" href="#collapseAddComment">Add Comment</a>]
+            <div class="col-md-4 m-2 collapse" id="collapseAddComment">
+                <form asp-action="Create" asp-controller="Comments">
+                    <input hidden name="@(nameof(Comment.PostID))" value="@Model.ID" />
+                    <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                    <input hidden name="@(nameof(Comment.CommentID))" value="" />
+                    <div class="">
+                        <label class="control-label">Add Comment:</label>
+                        <input name="@(nameof(Comment.Body))" class="form-control" />
+                    </div>
+                    <div class="d-flex justify-content-center mt-2">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
             @{PresentCommentsRecursively(Model.Coments);}
         </div>
-        <div class="col-md-4">
-            <form asp-action="Create" asp-controller="Comments">
-                <input hidden name="@(nameof(Comment.PostID))" value="@Model.ID" />
-                <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
-                <input hidden name="@(nameof(Comment.CommentID))" value="" />
-                <div class="form-group">
-                    <label class="control-label">@(nameof(Comment.Body))</label>
-                    <input name="@(nameof(Comment.Body))" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <input type="submit" value="Create" class="btn btn-primary" />
-                </div>
-            </form>
-        </div>
     </div>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a> |
-    <a asp-action="Index">Back to List</a>
 </div>

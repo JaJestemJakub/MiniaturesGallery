@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ namespace MiniaturesGallery.Controllers
             
             var post = await _context.Posts
                 .Include(a => a.Attachments)
+                .Include(a => a.User)
                 .Include(a => a.Coments)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (post == null)
@@ -49,6 +51,8 @@ namespace MiniaturesGallery.Controllers
 
             foreach(var comment in post.Coments)
             {
+                if (comment.UserID != null)
+                    comment.User = _context.Users.FirstOrDefault(x => x.Id == comment.UserID);
                 if(comment.CommentID != null)
                 {
                     var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
@@ -61,6 +65,7 @@ namespace MiniaturesGallery.Controllers
             }
 
             post.Rates = new List<Rate>();
+            post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
             if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
             {
                 post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()));
@@ -70,6 +75,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -80,19 +86,22 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("ID,Topic,Text")] Post post)
         {
             if (ModelState.IsValid)
             {
+                post.CrateDate = DateTime.Now;
                 post.UserID = User.GetLoggedInUserId<string>();
                 _context.Add(post);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Edit), new { id = post.ID });
             }
             return View(post);
         }
 
         // GET: Posts/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Posts == null)
@@ -108,6 +117,13 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
+            post.Rates = new List<Rate>();
+            post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+            if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
+            {
+                post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()));
+            }
+
             PostEditViewModel viewModel = new PostEditViewModel { Post = post };
             return View(viewModel);
         }
@@ -117,6 +133,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("ID,Topic,Text")] Post post)
         {
             if (id != post.ID)
@@ -128,7 +145,10 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    _context.Update(post);
+                    Post postFromDB = await _context.Posts.FirstAsync(x => x.ID == post.ID);
+                    postFromDB.Topic = post.Topic;
+                    postFromDB.Text = post.Text;
+                    _context.Update(postFromDB);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -142,12 +162,13 @@ namespace MiniaturesGallery.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new { id = post.ID });
             }
             return View(post);
         }
 
         // GET: Posts/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Posts == null)
@@ -156,6 +177,7 @@ namespace MiniaturesGallery.Controllers
             }
 
             var post = await _context.Posts
+                .Include(a => a.Attachments)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (post == null)
             {
@@ -168,6 +190,7 @@ namespace MiniaturesGallery.Controllers
         // POST: Posts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Posts == null)
@@ -202,6 +225,7 @@ namespace MiniaturesGallery.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> AddAttachment(int id, [Bind("ID", "Files")] PostEditViewModel postViewModel)
         {
             if (ModelState.IsValid)
@@ -232,6 +256,7 @@ namespace MiniaturesGallery.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteAttachment(int id)
         {
             Attachment att = await _context.Attachments

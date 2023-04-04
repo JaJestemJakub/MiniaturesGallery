@@ -5,11 +5,18 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Delete</h1>
+<h1 style="display: inline;">
+    Delete 
+</h1>
+<h4 style="display: inline;">
+    [<a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a>]
+</h4>
+<h4 style="display: inline;">
+    [<a asp-action="Details" asp-route-id="@Model?.ID" class="text-secondary">Details</a>]
+</h4>
 
 <h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>Post</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -25,10 +32,36 @@
             @Html.DisplayFor(model => model.Text)
         </dd>
     </dl>
+
+    <div class="d-flex justify-content-center">
+        @foreach (var att in Model.Attachments)
+        {
+            <button>
+                <a data-bs-toggle="modal" href="#imageModal_@att.ID">
+                    <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block" style="max-height: 50px; max-width: 50px">
+                </a>
+            </button>
+            <div class="modal fade" tabindex="-1" aria-hidden="true" id="imageModal_@att.ID">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">@att.FileName</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body d-flex align-items-center justify-content-center">
+                            <img src="~/Files/@att.FullFileName" alt="@att.FileName">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }       
+    </div>
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="ID" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Delete" class="btn btn-danger" />
     </form>
 </div>

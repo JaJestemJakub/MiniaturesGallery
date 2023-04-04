@@ -1,4 +1,7 @@
-﻿using MiniaturesGallery.Models.Abstracts;
+﻿using Microsoft.AspNetCore.Identity;
+using MiniaturesGallery.Models.Abstracts;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MiniaturesGallery.Models
 {
@@ -9,10 +12,12 @@ namespace MiniaturesGallery.Models
 
         public int ID { get; set; }
         public string? Body { get; set; }
+        public DateTime CrateDate { get; set; }
 
         public int PostID { get; set; }
         public int? CommentID { get; set; } //aswer to
 
+        public IdentityUser? User { get; set; }
         public ICollection<Comment>? Comments { get; set; }
     }
 }
