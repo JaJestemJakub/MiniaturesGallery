@@ -29,12 +29,14 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
               return View(await _context.Posts.ToListAsync());
         }
 
         // GET: Posts
+        [AllowAnonymous]
         public async Task<IActionResult> ScrollIndex(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber)
         {
             ViewBag.SearchString = searchString;
@@ -111,6 +113,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Posts == null)
@@ -154,7 +157,6 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Create
-        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -165,7 +167,6 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> Create([Bind("ID,Topic,Text")] Post post)
         {
             if (ModelState.IsValid)
@@ -180,7 +181,6 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Edit/5
-        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Posts == null)
@@ -212,7 +212,6 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("ID,Topic,Text")] Post post)
         {
             if (id != post.ID)
@@ -247,7 +246,6 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Delete/5
-        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Posts == null)
@@ -269,7 +267,6 @@ namespace MiniaturesGallery.Controllers
         // POST: Posts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Posts == null)
@@ -304,7 +301,6 @@ namespace MiniaturesGallery.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> AddAttachment(int id, [Bind("ID", "Files")] PostEditViewModel postViewModel)
         {
             if (ModelState.IsValid)
@@ -335,7 +331,6 @@ namespace MiniaturesGallery.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> DeleteAttachment(int id)
         {
             Attachment att = await _context.Attachments

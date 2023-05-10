@@ -12,7 +12,6 @@ using MiniaturesGallery.Models;
 
 namespace MiniaturesGallery.Controllers
 {
-    [Authorize]
     public class RatesController : Controller
     {
         private readonly ApplicationDbContext _context;
