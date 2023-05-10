@@ -17,7 +17,9 @@ namespace MiniaturesGallery.Models
         public float Rating { get; set; }
         public DateTime CrateDate { get; set; }
         [NotMapped]
-        public int NoOfRates { get; set; }
+        public int NoOfRates { get; set; }        
+        [NotMapped]
+        public int NoOfComments { get; set; }
 
         public ICollection<Attachment>? Attachments { get; set; }
         public ICollection<Comment>? Coments { get; set; }

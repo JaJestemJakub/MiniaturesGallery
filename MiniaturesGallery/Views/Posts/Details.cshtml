@@ -149,7 +149,7 @@
                     break;
             }
         }
-        <form asp-action="@action" asp-controller="Rates">
+        <form asp-action="@action" asp-controller="Rates" method="post">
             <div class="text-center">
                 Rating: @Model.Rating.ToString("n2") (@Model.NoOfRates.ToString())
             </div>

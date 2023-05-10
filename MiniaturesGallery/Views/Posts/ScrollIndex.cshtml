@@ -1,0 +1,250 @@
+﻿@model IEnumerable<MiniaturesGallery.Models.Post>
+@{
+    ViewData["Title"] = "ScrollIndex";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    @using MiniaturesGallery.HelpClasses
+    @using MiniaturesGallery.Extensions
+}
+@functions
+{
+    private async Task PresentPageNumberLink(string pageNumber, string symbol, string disabled)
+    {
+        <li class="page-item" @(disabled)>
+            <a asp-action="ScrollIndex"
+               asp-route-pageNumber="@(pageNumber)"
+               class="page-link">
+                @(symbol)
+            </a>
+        </li>
+    }
+}
+
+<div class="row d-flex justify-content-center">
+    <div class="col-6 mb-4">
+        <form method="get">
+            <div class="input-group" style="margin-bottom: 5px">
+                @if (ViewBag.DateFrom != "0001-01-01")
+                {
+                    <input type="date" name="dateFrom" class="form-control" value="@ViewBag.DateFrom">
+                }
+                else
+                {
+                    <input type="date" name="dateFrom" class="form-control" value="2022-01-01">
+                }
+                @if (ViewBag.DateTo != "0001-01-01")
+                {
+                    <input type="date" name="dateTo" class="form-control" value="@ViewBag.DateTo">
+                }
+                else
+                {
+                    <input type="date" name="dateTo" class="form-control" value="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")">
+                }
+            </div>
+            <div class="input-group">
+                <input type="text" name="SearchString" class="form-control" value="@ViewBag.SearchString">
+                <select name="OrderByFilter" class="form-select" value="@ViewBag.OrderByFilter" asp-items="Html.GetEnumSelectList<OrderBy>()">
+                    <option value="">Order by</option>
+                </select>
+                <span class="input-group-append">
+                    <button type="submit" class="btn btn-primary" asp-action="ScrollIndex">Search</button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+
+@foreach(Post post in Model)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <div id="carouselImages@(post.ID)" class="carousel slide carousel-dark carousel-fade" data-bs-ride="carousel" data-bs-interval="false">
+                <div class="carousel-inner">
+                    @foreach (var att in post.Attachments)
+                    {
+                        string activeAttribute = "";
+                        if (att == post.Attachments.First())
+                            activeAttribute = "active";
+                        <div class="carousel-item @activeAttribute d-flex align-items-center justify-content-center" style="height: 500px">
+                            <a data-bs-toggle="modal" href="#imageModal_@att.ID">
+                                <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block w-80" style="max-height: 500px">
+                            </a>
+                        </div>
+
+                        <div class="modal fade" tabindex="-1" aria-hidden="true" id="imageModal_@att.ID">
+                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">@att.FileName</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body d-flex align-items-center justify-content-center">
+                                        <img src="~/Files/@att.FullFileName" alt="@att.FileName">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex justify-content-center">
+                    @{
+                        int iterator = 0;
+                        foreach (var att in post.Attachments)
+                        {
+                            string cssClass = "";
+                            string cssAria = "";
+                            if (att == post.Attachments.First())
+                            {
+                                cssClass = "active";
+                                cssAria = "true";
+                            }
+
+                            <button type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide-to="@iterator" class="@cssClass" aria-current="@cssAria">
+                                <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block" style="max-height: 50px; max-width: 50px">
+                            </button>
+                            iterator++;
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <h6>@(post.User.UserName)</h6>
+            <h6>@(post.CrateDate)</h6>
+            <div class="text-center align-items-center">
+                <h1 style="display: inline;">
+                    @post.Topic
+                </h1>
+                @if (User.GetLoggedInUserId<string>() == post.UserID)
+                {
+                    <h4 style="display: inline;">
+                        [<a asp-action="Edit" asp-route-id="@post.ID">Edit</a>]
+                    </h4>
+                    <h4 style="display: inline;">
+                        [<a asp-action="Delete" asp-route-id="@post.ID" class="text-danger">Delete</a>]
+                    </h4>
+                }
+            </div>
+            <div class="text-center align-items-center">
+                <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-muted">(See Details)</a></small>
+            </div>
+            <h4 style="white-space: pre-line">@post.Text</h4>
+            @{
+                string action = "Create", checked5 = "", checked4 = "", checked3 = "", checked2 = "", checked1 = "";
+                int rating = (int)Math.Floor(post.Rating);
+                if (post.Rates.Any())
+                {
+                    action = "Edit";
+                    rating = post.Rates.First().Rating;
+                }
+                switch (rating)
+                {
+                    case 1:
+                        checked1 = "checked";
+                        break;
+                    case 2:
+                        checked2 = "checked";
+                        break;
+                    case 3:
+                        checked3 = "checked";
+                        break;
+                    case 4:
+                        checked4 = "checked";
+                        break;
+                    case 5:
+                        checked5 = "checked";
+                        break;
+                }
+            }
+            <form asp-action="@action" asp-controller="Rates" method="post">
+                <div class="text-center">
+                    Rating: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
+                </div>
+                <div class="rating justify-content-center">
+                    @if (post.Rates.Any())
+                    {
+                        <input hidden name="@(nameof(Rate.ID))" value="@post.Rates.First().ID" />
+                    }
+                    <input hidden name="@(nameof(Rate.PostID))" value="@post.ID" />
+                    <input hidden name="@(nameof(Rate.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                    <input type="radio" name="rating" value="5" id="5" @checked5 onclick="$('#collapseSubmitRateButton').collapse('show');">
+                    <label for="5">☆</label>
+                    <input type="radio" name="rating" value="4" id="4" @checked4 onclick="$('#collapseSubmitRateButton').collapse('show');">
+                    <label for="4">☆</label>
+                    <input type="radio" name="rating" value="3" id="3" @checked3 onclick="$('#collapseSubmitRateButton').collapse('show');">
+                    <label for="3">☆</label>
+                    <input type="radio" name="rating" value="2" id="2" @checked2 onclick="$('#collapseSubmitRateButton').collapse('show');">
+                    <label for="2">☆</label>
+                    <input type="radio" name="rating" value="1" id="1" @checked1 onclick="$('#collapseSubmitRateButton').collapse('show');">
+                    <label for="1">☆</label>
+                </div>
+                <div class="text-center mb-2">
+                    <input type="submit" value="Submit" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton" />
+                </div>
+            </form>
+            <div class="text-center">
+                Comments: @post.NoOfComments.ToString()
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @{
+        int pageIndex = (Model as PaginatedList<Post>).PageIndex;
+        int totalPages = (Model as PaginatedList<Post>).TotalPages;
+        var prevDisabled = !(Model as PaginatedList<Post>).HasPreviousPage ? "disabled" : "";
+        var nextDisabled = !(Model as PaginatedList<Post>).HasNextPage ? "disabled" : "";
+    }
+    <ul class="pagination pagination-lg justify-content-center">
+        @{
+            await PresentPageNumberLink((pageIndex - 1).ToString(), "«", prevDisabled);
+        }
+        @if (pageIndex != 1)
+        {
+            await PresentPageNumberLink("1", "1","");
+        }
+        @if (pageIndex > 4)
+        {
+            <li class="page-item">
+                <a onclick="redirectToPage()" class="page-link">...</a>
+            </li>
+        }
+        @if (pageIndex > 3)
+        {
+            await PresentPageNumberLink((pageIndex - 2).ToString(), (pageIndex - 2).ToString(), "");
+        }
+        @if (pageIndex > 2)
+        {
+            await PresentPageNumberLink((pageIndex - 1).ToString(), (pageIndex - 1).ToString(), "");
+        }
+        <li class="page-item active"><a class="page-link">@(pageIndex)</a></li>
+        @if ((totalPages - pageIndex) > 0)
+        {
+            await PresentPageNumberLink((pageIndex + 1).ToString(), (pageIndex + 1).ToString(), "");
+        }
+        @if ((totalPages - pageIndex) > 1)
+        {
+            await PresentPageNumberLink((pageIndex + 2).ToString(), (pageIndex + 2).ToString(), "");
+        }
+        @if ((totalPages - pageIndex) > 3)
+        {
+            <li class="page-item">
+                <a onclick="redirectToPage()" class="page-link">...</a>
+            </li>
+        }
+        @if ((totalPages - pageIndex) > 2)
+        {
+            await PresentPageNumberLink((totalPages).ToString(), (totalPages).ToString(), "");
+        }
+        @{
+            await PresentPageNumberLink((pageIndex + 1).ToString(), "»", nextDisabled);
+        }
+    </ul>
+</div>
+
+<script>
+    document.getElementsByName("OrderByFilter")[0].value = @Html.Raw(ViewBag.OrderByFilter);
+</script>
