@@ -67,9 +67,9 @@ namespace MiniaturesGallery.Controllers
                 await _context.SaveChangesAsync();
 
                 ActualizeRating(rate.PostID);
-                return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = rate.PostID });
+                return Redirect(HttpContext.Request.Headers["Referer"]);
             }
-            return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = rate.PostID });
+            return Redirect(HttpContext.Request.Headers["Referer"]);
         }
 
         // GET: Rates/Edit/5
@@ -120,9 +120,9 @@ namespace MiniaturesGallery.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = rate.PostID });
+                return Redirect(HttpContext.Request.Headers["Referer"]);
             }
-            return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = rate.PostID });
+            return Redirect(HttpContext.Request.Headers["Referer"]);
         }
 
         // GET: Rates/Delete/5
