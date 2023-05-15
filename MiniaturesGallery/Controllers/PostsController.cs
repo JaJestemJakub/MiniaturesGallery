@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -21,10 +22,12 @@ namespace MiniaturesGallery.Controllers
         private const int _pageSize = 10;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment hostingEnvironment;
+        private readonly IAuthorizationService _authorizationService;
 
-        public PostsController(ApplicationDbContext context, IWebHostEnvironment hostingEnvironment)
+        public PostsController(ApplicationDbContext context, IWebHostEnvironment hostingEnvironment, IAuthorizationService authorizationService)
         {
             _context = context;
+            _authorizationService = authorizationService;
             this.hostingEnvironment = hostingEnvironment;
         }
 
@@ -196,6 +199,12 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             post.Rates = new List<Rate>();
             post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
             if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
@@ -217,6 +226,12 @@ namespace MiniaturesGallery.Controllers
             if (id != post.ID)
             {
                 return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -261,6 +276,12 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             return View(post);
         }
 
@@ -279,7 +300,13 @@ namespace MiniaturesGallery.Controllers
                 .FirstAsync(x => x.ID == id);
             if (post != null)
             {
-                if(post.Attachments != null && post.Attachments.Any()) //Delete all attachments if any
+                var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
+                if (!isAuthorized.Succeeded)
+                {
+                    return Forbid();
+                }
+
+                if (post.Attachments != null && post.Attachments.Any()) //Delete all attachments if any
                 {
                     string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", post.ID.ToString());
                     foreach (var att in post.Attachments)
@@ -293,9 +320,9 @@ namespace MiniaturesGallery.Controllers
                         Directory.Delete(FolderPath);
                 }
                 _context.Posts.Remove(post);
+                await _context.SaveChangesAsync();
             }
             
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -303,6 +330,23 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAttachment(int id, [Bind("ID", "Files")] PostEditViewModel postViewModel)
         {
+            if (_context.Posts == null)
+            {
+                return NotFound();
+            }
+
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(m => m.ID == id);
+            if (post == null)
+            {
+                return NotFound();
+            }
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Create);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
                 if (postViewModel.Files != null && postViewModel.Files.Count > 0)
@@ -333,9 +377,25 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAttachment(int id)
         {
+            if (_context.Attachments == null)
+            {
+                return NotFound();
+            }
+
             Attachment att = await _context.Attachments
                 .Include(a => a.Post)
                 .FirstAsync(x => x.ID == id);
+            if (att == null)
+            {
+                return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, att, Operations.Delete);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             _context.Attachments.Remove(att);
 
             string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", att.FullFileName);

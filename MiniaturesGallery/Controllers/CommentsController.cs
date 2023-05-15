@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
+using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 
 namespace MiniaturesGallery.Controllers
@@ -14,10 +17,12 @@ namespace MiniaturesGallery.Controllers
     public class CommentsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CommentsController(ApplicationDbContext context)
+        public CommentsController(ApplicationDbContext context, IAuthorizationService authorizationService)
         {
             _context = context;
+            _authorizationService = authorizationService;
         }
 
         // GET: Comments
@@ -82,6 +87,12 @@ namespace MiniaturesGallery.Controllers
             {
                 return NotFound();
             }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             return View(comment);
         }
 
@@ -102,6 +113,13 @@ namespace MiniaturesGallery.Controllers
                 try
                 {
                     Comment commentFromDB = await _context.Comments.FirstAsync(x => x.ID == comment.ID);
+
+                    var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Update);
+                    if (!isAuthorized.Succeeded)
+                    {
+                        return Forbid();
+                    }
+
                     commentFromDB.Body = comment.Body;
                     _context.Update(commentFromDB);
                     await _context.SaveChangesAsync();
@@ -137,6 +155,12 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Delete);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             return View(comment);
         }
 
@@ -152,10 +176,17 @@ namespace MiniaturesGallery.Controllers
             var comment = await _context.Comments.FindAsync(id);
             if (comment != null)
             {
+                var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Delete);
+                if (!isAuthorized.Succeeded)
+                {
+                    return Forbid();
+                }
+
                 _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync();
             }
             
-            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 

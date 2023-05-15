@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MiniaturesGallery.Autorization;
 using MiniaturesGallery.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,9 +21,25 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
+builder.Services.AddScoped<IAuthorizationHandler, IsOwnerAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, AdministratorsAuthorizationHandler>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+    // requires using Microsoft.Extensions.Configuration;
+    // Set password with the Secret Manager tool.
+    // dotnet user-secrets set SeedAdminUserPW <pw>
+
+    var adminUserPw = builder.Configuration.GetValue<string>("SeedAdminUserPW");
+
+    await SeedData.Initialize(services, adminUserPw);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

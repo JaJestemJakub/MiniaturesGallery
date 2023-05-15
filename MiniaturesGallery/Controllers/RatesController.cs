@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
+using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 
 namespace MiniaturesGallery.Controllers
@@ -15,10 +17,12 @@ namespace MiniaturesGallery.Controllers
     public class RatesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAuthorizationService _authorizationService;
 
-        public RatesController(ApplicationDbContext context)
+        public RatesController(ApplicationDbContext context, IAuthorizationService authorizationService)
         {
             _context = context;
+            _authorizationService = authorizationService;
         }
 
         // GET: Rates
@@ -84,6 +88,12 @@ namespace MiniaturesGallery.Controllers
             {
                 return NotFound();
             }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
             return View(rate);
         }
 
@@ -97,6 +107,12 @@ namespace MiniaturesGallery.Controllers
             if (id != rate.ID)
             {
                 return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -139,6 +155,12 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Delete);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             return View(rate);
         }
 
@@ -154,12 +176,17 @@ namespace MiniaturesGallery.Controllers
             var rate = await _context.Rates.FindAsync(id);
             if (rate != null)
             {
+                var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Delete);
+                if (!isAuthorized.Succeeded)
+                {
+                    return Forbid();
+                }
                 _context.Rates.Remove(rate);
-            }
-            
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-            ActualizeRating(rate.PostID);
+                ActualizeRating(rate.PostID);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
