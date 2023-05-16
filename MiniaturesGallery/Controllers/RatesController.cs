@@ -11,38 +11,36 @@ using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
+using MiniaturesGallery.Services;
 
 namespace MiniaturesGallery.Controllers
 {
     public class RatesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IRatesService _ratesService;
         private readonly IAuthorizationService _authorizationService;
 
-        public RatesController(ApplicationDbContext context, IAuthorizationService authorizationService)
+        public RatesController(IAuthorizationService authorizationService, IRatesService ratesService)
         {
-            _context = context;
+            _ratesService = ratesService;
             _authorizationService = authorizationService;
         }
 
         // GET: Rates
         public async Task<IActionResult> Index()
         {
-              return _context.Rates != null ? 
-                          View(await _context.Rates.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Rates'  is null.");
+            return View(await _ratesService.GetAsync());
         }
 
         // GET: Rates/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Rates == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var rate = await _context.Rates
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var rate = await _ratesService.GetAsync((int)id);
             if (rate == null)
             {
                 return NotFound();
@@ -66,10 +64,8 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(rate);
-                await _context.SaveChangesAsync();
+                await _ratesService.CreateAsync(rate);
 
-                ActualizeRating(rate.PostID);
                 return Redirect(HttpContext.Request.Headers["Referer"]);
             }
             return Redirect(HttpContext.Request.Headers["Referer"]);
@@ -78,12 +74,12 @@ namespace MiniaturesGallery.Controllers
         // GET: Rates/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Rates == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var rate = await _context.Rates.FindAsync(id);
+            var rate = await _ratesService.GetAsync((int)id);
             if (rate == null)
             {
                 return NotFound();
@@ -102,14 +98,20 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Rating,PostID,UserID")] Rate rate)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Rating")] Rate rate)
         {
             if (id != rate.ID)
             {
                 return NotFound();
             }
 
-            var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Update);
+            var rateFromDB = await _ratesService.GetAsync((int)id);
+            if (rateFromDB == null)
+            {
+                return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, rateFromDB, Operations.Update);
             if (!isAuthorized.Succeeded)
             {
                 return Forbid();
@@ -119,14 +121,11 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    _context.Update(rate);
-                    await _context.SaveChangesAsync();
-
-                    ActualizeRating(rate.PostID);
+                    await _ratesService.UpdateAsync(rate);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RateExists(rate.ID))
+                    if (!_ratesService.Exists(rate.ID))
                     {
                         return NotFound();
                     }
@@ -143,13 +142,12 @@ namespace MiniaturesGallery.Controllers
         // GET: Rates/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Rates == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var rate = await _context.Rates
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var rate = await _ratesService.GetAsync((int)id);
             if (rate == null)
             {
                 return NotFound();
@@ -169,11 +167,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Rates == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Rates'  is null.");
-            }
-            var rate = await _context.Rates.FindAsync(id);
+            var rate = await _ratesService.GetAsync(id);
             if (rate != null)
             {
                 var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Delete);
@@ -181,42 +175,10 @@ namespace MiniaturesGallery.Controllers
                 {
                     return Forbid();
                 }
-                _context.Rates.Remove(rate);
-                await _context.SaveChangesAsync();
-
-                ActualizeRating(rate.PostID);
+                await _ratesService.DeleteAsync(id);
             }
 
             return RedirectToAction(nameof(Index));
-        }
-
-        public bool ActualizeRating(int? id)
-        {
-            if (id == null || _context.Posts == null)
-            {
-                return false;
-            }
-
-            Post post = _context.Posts
-                .Include(a => a.Rates)
-                .First(x => x.ID == id);
-            float newRating = 0;
-            foreach (var r in post.Rates)
-                newRating += r.Rating;
-
-            if (post.Rates.Count > 0)
-                post.Rating = newRating / post.Rates.Count;
-            else
-                post.Rating = 0;
-
-            _context.Update(post);
-            _context.SaveChanges();
-            return true;
-        }
-
-        private bool RateExists(int id)
-        {
-          return (_context.Rates?.Any(e => e.ID == id)).GetValueOrDefault();
         }
     }
 }

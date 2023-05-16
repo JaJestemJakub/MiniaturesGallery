@@ -13,29 +13,29 @@ using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
+using MiniaturesGallery.Services;
 using MiniaturesGallery.ViewModels;
 
 namespace MiniaturesGallery.Controllers
 {
     public class PostsController : Controller
-    {
-        private const int _pageSize = 10;
-        private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment hostingEnvironment;
+    {       
+        private readonly IPostService _postService;
+        private readonly IAttachmentsService _attachmentsService;
         private readonly IAuthorizationService _authorizationService;
 
-        public PostsController(ApplicationDbContext context, IWebHostEnvironment hostingEnvironment, IAuthorizationService authorizationService)
+        public PostsController(IPostService postService, IAttachmentsService attachmentsService, IAuthorizationService authorizationService)
         {
-            _context = context;
+            _postService = postService;
+            _attachmentsService = attachmentsService;
             _authorizationService = authorizationService;
-            this.hostingEnvironment = hostingEnvironment;
         }
 
         // GET: Posts
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Posts.ToListAsync());
+            return View(await _postService.GetAsync());
         }
 
         // GET: Posts
@@ -51,111 +51,23 @@ namespace MiniaturesGallery.Controllers
                 dateTo = DateTime.Today;
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
-            IQueryable<Post> posts;
-            if (String.IsNullOrEmpty(searchString) == false)
-                posts = _context.Posts
-                    .Include(a => a.Attachments)
-                    .Include(a => a.User)
-                    .AsQueryable()
-                    .Where(s => s.Topic.Contains(searchString)
-                    || s.Text.Contains(searchString)
-                    );
-            else
-                posts = _context.Posts
-                    .Include(a => a.Attachments)
-                    .Include(a => a.User)
-                    .AsQueryable();
-
-            if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
-            {
-                posts = posts.Where(x => x.CrateDate >= dateFrom && x.CrateDate < dateTo.AddDays(1));
-            }
-
-            if (String.IsNullOrEmpty(orderByFilter) == false)
-            {
-                if (orderByFilter != "")
-                {
-                    int.TryParse(orderByFilter, out int orderByInt);
-                    switch ((OrderBy)orderByInt)
-                    {
-                        case OrderBy.DateDesc:
-                            posts = posts.OrderByDescending(x => x.CrateDate);
-                            break;
-                        case OrderBy.DateAsc:
-                            posts = posts.OrderBy(x => x.CrateDate);
-                            break;
-                        case OrderBy.RatesDesc:
-                            posts = posts.OrderByDescending(x => x.Rating);
-                            break;
-                        case OrderBy.RatesAsc:
-                            posts = posts.OrderBy(x => x.Rating);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    posts = posts.OrderByDescending(x => x.ID);
-                }
-            }
-
-            foreach (Post post in posts)
-            {
-                post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
-
-                post.Rates = new List<Rate>();
-                post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);           
-                if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
-                {
-                    post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()));
-                }
-            }
-
-            return View(await PaginatedList<Post>.CreateAsync(posts, pageNumber ?? 1, _pageSize));
+            return View(await _postService.GetAsyncSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>()));
         }
 
         // GET: Posts/Details/5
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Posts == null)
+            if (id == null)
             {
                 return NotFound();
             }
-            
-            var post = await _context.Posts
-                .Include(a => a.Attachments)
-                .Include(a => a.User)
-                .Include(a => a.Coments)
-                .FirstOrDefaultAsync(m => m.ID == id);
+
+            var post = await _postService.GetAsync((int) id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
             }
-
-            foreach(var comment in post.Coments)
-            {
-                if (comment.UserID != null)
-                    comment.User = _context.Users.FirstOrDefault(x => x.Id == comment.UserID);
-                if(comment.CommentID != null)
-                {
-                    var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
-                    if (parent != null)
-                    {
-                        parent.Comments.Add(comment);                     
-                    }
-                    post.Coments.Remove(comment);
-                }
-            }
-
-            post.Rates = new List<Rate>();
-            post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
-            if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
-            {
-                post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()));
-            }
-
             return View(post);
         }
 
@@ -174,11 +86,8 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
-                post.CrateDate = DateTime.Now;
-                post.UserID = User.GetLoggedInUserId<string>();
-                _context.Add(post);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Edit), new { id = post.ID });
+                int id = await _postService.CreateAsync(post, User.GetLoggedInUserId<string>());
+                return RedirectToAction(nameof(Edit), new { id = id });
             }
             return View(post);
         }
@@ -186,14 +95,12 @@ namespace MiniaturesGallery.Controllers
         // GET: Posts/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Posts == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var post = await _context.Posts
-                .Include(a => a.Attachments)
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -203,13 +110,6 @@ namespace MiniaturesGallery.Controllers
             if (!isAuthorized.Succeeded)
             {
                 return Forbid();
-            }
-
-            post.Rates = new List<Rate>();
-            post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
-            if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()))
-            {
-                post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == User.GetLoggedInUserId<string>()));
             }
 
             PostEditViewModel viewModel = new PostEditViewModel { Post = post };
@@ -228,7 +128,13 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Update);
+            var postFromDB = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            if (postFromDB == null)
+            {
+                return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, postFromDB, Operations.Update);
             if (!isAuthorized.Succeeded)
             {
                 return Forbid();
@@ -238,15 +144,11 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    Post postFromDB = await _context.Posts.FirstAsync(x => x.ID == post.ID);
-                    postFromDB.Topic = post.Topic;
-                    postFromDB.Text = post.Text;
-                    _context.Update(postFromDB);
-                    await _context.SaveChangesAsync();
+                    await _postService.UpdateAsync(post);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PostExists(post.ID))
+                    if (!_postService.Exists(post.ID))
                     {
                         return NotFound();
                     }
@@ -263,14 +165,12 @@ namespace MiniaturesGallery.Controllers
         // GET: Posts/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Posts == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var post = await _context.Posts
-                .Include(a => a.Attachments)
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -290,14 +190,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Posts == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Posts'  is null.");
-            }
-            var post = await _context.Posts
-                .Include(a => a.Attachments)
-                .Include(a => a.Coments)
-                .FirstAsync(x => x.ID == id);
+            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post != null)
             {
                 var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
@@ -306,21 +199,7 @@ namespace MiniaturesGallery.Controllers
                     return Forbid();
                 }
 
-                if (post.Attachments != null && post.Attachments.Any()) //Delete all attachments if any
-                {
-                    string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", post.ID.ToString());
-                    foreach (var att in post.Attachments)
-                    {
-                        string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", att.FullFileName);
-                        
-                        System.IO.File.Delete(FilePath);
-                    }
-                    string[] files = Directory.GetFiles(FolderPath);
-                    if (files.Length == 0)
-                        Directory.Delete(FolderPath);
-                }
-                _context.Posts.Remove(post);
-                await _context.SaveChangesAsync();
+                await _postService.DeleteAsync(id);
             }
             
             return RedirectToAction(nameof(Index));
@@ -330,13 +209,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAttachment(int id, [Bind("ID", "Files")] PostEditViewModel postViewModel)
         {
-            if (_context.Posts == null)
-            {
-                return NotFound();
-            }
-
-            var post = await _context.Posts
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -349,26 +222,7 @@ namespace MiniaturesGallery.Controllers
 
             if (ModelState.IsValid)
             {
-                if (postViewModel.Files != null && postViewModel.Files.Count > 0)
-                {
-                    foreach (IFormFile f in postViewModel.Files)
-                    {
-                        if(f.IsImage())
-                        {
-                            string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", id.ToString());
-                            if (Directory.Exists(FolderPath) == false)
-                                Directory.CreateDirectory(FolderPath);
-                            string FolderSlashFile = Path.Combine(id.ToString(), f.FileName);
-                            string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile);
-
-                            using (FileStream fs = new FileStream(FilePath, FileMode.Create))
-                                f.CopyTo(fs);
-                            Attachment att = new Attachment(User.GetLoggedInUserId<string>()) { FileName = f.FileName, FullFileName = FolderSlashFile, PostID = id };
-                            _context.Add(att);
-                        }
-                    }
-                    await _context.SaveChangesAsync();
-                }
+                await _attachmentsService.CreateAsync(postViewModel.Files, id, User.GetLoggedInUserId<string>());
             }
             return RedirectToAction(nameof(Edit), new { id = id });
         }
@@ -377,14 +231,8 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAttachment(int id)
         {
-            if (_context.Attachments == null)
-            {
-                return NotFound();
-            }
+            Attachment att = await _attachmentsService.GetAsync(id);
 
-            Attachment att = await _context.Attachments
-                .Include(a => a.Post)
-                .FirstAsync(x => x.ID == id);
             if (att == null)
             {
                 return NotFound();
@@ -396,23 +244,8 @@ namespace MiniaturesGallery.Controllers
                 return Forbid();
             }
 
-            _context.Attachments.Remove(att);
-
-            string FilePath = Path.Combine(hostingEnvironment.WebRootPath, "Files", att.FullFileName);
-            string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", att.PostID.ToString());
-
-            System.IO.File.Delete(FilePath);
-            string[] files = Directory.GetFiles(FolderPath);
-            if (files.Length == 0)
-                Directory.Delete(FolderPath);
-
-            await _context.SaveChangesAsync();
+            await _attachmentsService.DeleteAsync(id);
             return RedirectToAction(nameof(Edit), new { id = att.PostID });
-        }
-
-        private bool PostExists(int id)
-        {
-          return _context.Posts.Any(e => e.ID == id);
         }
     }
 }
