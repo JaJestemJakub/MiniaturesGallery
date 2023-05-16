@@ -11,38 +11,36 @@ using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
+using MiniaturesGallery.Services;
 
 namespace MiniaturesGallery.Controllers
 {
     public class CommentsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICommentsService _commentsService;
         private readonly IAuthorizationService _authorizationService;
 
-        public CommentsController(ApplicationDbContext context, IAuthorizationService authorizationService)
+        public CommentsController(IAuthorizationService authorizationService, ICommentsService commentsService)
         {
-            _context = context;
+            _commentsService = commentsService;
             _authorizationService = authorizationService;
         }
 
         // GET: Comments
         public async Task<IActionResult> Index()
         {
-              return _context.Comments != null ? 
-                          View(await _context.Comments.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Comments'  is null.");
+            return View(await _commentsService.GetAsync());
         }
 
         // GET: Comments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Comments == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var comment = await _context.Comments
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var comment = await _commentsService.GetAsync((int)id);
             if (comment == null)
             {
                 return NotFound();
@@ -66,9 +64,7 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
-                comment.CrateDate = DateTime.Now;
-                _context.Add(comment);
-                await _context.SaveChangesAsync();
+                await _commentsService.CreateAsync(comment);
                 return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = comment.PostID });
             }
             return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = comment.PostID});
@@ -77,12 +73,12 @@ namespace MiniaturesGallery.Controllers
         // GET: Comments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Comments == null)
+            if (id == null )
             {
                 return NotFound();
             }
 
-            var comment = await _context.Comments.FindAsync(id);
+            var comment = await _commentsService.GetAsync((int)id);
             if (comment == null)
             {
                 return NotFound();
@@ -108,25 +104,26 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
+            Comment commentFromDB = await _commentsService.GetAsync(comment.ID);
+            if (commentFromDB == null)
+            {
+                return NotFound();
+            }
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    Comment commentFromDB = await _context.Comments.FirstAsync(x => x.ID == comment.ID);
-
-                    var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Update);
-                    if (!isAuthorized.Succeeded)
-                    {
-                        return Forbid();
-                    }
-
-                    commentFromDB.Body = comment.Body;
-                    _context.Update(commentFromDB);
-                    await _context.SaveChangesAsync();
+                    await _commentsService.UpdateAsync(comment);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CommentExists(comment.ID))
+                    if (!_commentsService.Exists(comment.ID))
                     {
                         return NotFound();
                     }
@@ -143,13 +140,12 @@ namespace MiniaturesGallery.Controllers
         // GET: Comments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Comments == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var comment = await _context.Comments
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var comment = await _commentsService.GetAsync((int)id);
             if (comment == null)
             {
                 return NotFound();
@@ -169,11 +165,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Comments == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Comments'  is null.");
-            }
-            var comment = await _context.Comments.FindAsync(id);
+            var comment = await _commentsService.GetAsync(id);
             if (comment != null)
             {
                 var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Delete);
@@ -182,17 +174,10 @@ namespace MiniaturesGallery.Controllers
                     return Forbid();
                 }
 
-                _context.Comments.Remove(comment);
-                await _context.SaveChangesAsync();
+                await _commentsService.DeleteAsync(id);
             }
             
-
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CommentExists(int id)
-        {
-          return (_context.Comments?.Any(e => e.ID == id)).GetValueOrDefault();
         }
     }
 }

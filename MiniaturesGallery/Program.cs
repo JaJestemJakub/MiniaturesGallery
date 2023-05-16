@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MiniaturesGallery.Autorization;
 using MiniaturesGallery.Data;
+using MiniaturesGallery.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,10 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddScoped<IAuthorizationHandler, IsOwnerAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdministratorsAuthorizationHandler>();
+builder.Services.AddScoped<IPostService, PostsService>();
+builder.Services.AddScoped<IAttachmentsService, AttachmentsService>();
+builder.Services.AddScoped<IRatesService, RatesService>();
+builder.Services.AddScoped<ICommentsService, CommentsService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
