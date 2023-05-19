@@ -33,7 +33,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Rates/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -50,9 +50,10 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Rates/Create
-        public IActionResult Create()
+        public IActionResult Create([FromRoute] int postId)
         {
-            return View();
+            //for Authorization redirection purpose
+            return (RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { id = postId }));
         }
 
         // POST: Rates/Create
@@ -60,7 +61,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Rating,PostID,UserID")] Rate rate)
+        public async Task<IActionResult> Create([FromRoute] int postId, [FromForm][Bind("ID,Rating,PostID,UserID")] Rate rate)
         {
             if (ModelState.IsValid)
             {
@@ -72,7 +73,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Rates/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -98,7 +99,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Rating")] Rate rate)
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromForm][Bind("ID,Rating")] Rate rate)
         {
             if (id != rate.ID)
             {
@@ -140,7 +141,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Rates/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -165,7 +166,7 @@ namespace MiniaturesGallery.Controllers
         // POST: Rates/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
         {
             var rate = await _ratesService.GetAsync(id);
             if (rate != null)

@@ -64,7 +64,7 @@ namespace MiniaturesGallery.Services
             _context.Update(rateFromDB);
             await _context.SaveChangesAsync();
 
-            ActualizeRating(rate.PostID);
+            ActualizeRating(rateFromDB.PostID);
         }
 
         private bool ActualizeRating(int? id)

@@ -40,7 +40,7 @@ namespace MiniaturesGallery.Controllers
 
         // GET: Posts
         [AllowAnonymous]
-        public async Task<IActionResult> ScrollIndex(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber)
+        public async Task<IActionResult> ScrollIndex([FromQuery] string searchString, [FromQuery] string orderByFilter, [FromQuery] DateTime dateFrom, [FromQuery] DateTime dateTo, [FromQuery] int? pageNumber)
         {
             ViewBag.SearchString = searchString;
             ViewBag.OrderByFilter = orderByFilter;
@@ -56,7 +56,7 @@ namespace MiniaturesGallery.Controllers
 
         // GET: Posts/Details/5
         [AllowAnonymous]
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -78,11 +78,9 @@ namespace MiniaturesGallery.Controllers
         }
 
         // POST: Posts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Topic,Text")] Post post)
+        public async Task<IActionResult> Create([FromForm][Bind("ID,Topic,Text")] Post post)
         {
             if (ModelState.IsValid)
             {
@@ -93,7 +91,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -117,11 +115,9 @@ namespace MiniaturesGallery.Controllers
         }
 
         // POST: Posts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Topic,Text")] Post post)
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromForm][Bind("ID,Topic,Text")] Post post)
         {
             if (id != post.ID)
             {
@@ -163,7 +159,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Posts/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -188,7 +184,7 @@ namespace MiniaturesGallery.Controllers
         // POST: Posts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
         {
             var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post != null)
@@ -207,7 +203,7 @@ namespace MiniaturesGallery.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddAttachment(int id, [Bind("ID", "Files")] PostEditViewModel postViewModel)
+        public async Task<IActionResult> AddAttachment([FromRoute] int id, [FromForm][Bind("ID", "Files")] PostEditViewModel postViewModel)
         {
             var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
@@ -229,7 +225,7 @@ namespace MiniaturesGallery.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAttachment(int id)
+        public async Task<IActionResult> DeleteAttachment([FromRoute] int id)
         {
             Attachment att = await _attachmentsService.GetAsync(id);
 

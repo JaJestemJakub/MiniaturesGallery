@@ -33,7 +33,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Comments/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -60,7 +60,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Body,PostID,CommentID,UserID")] Comment comment)
+        public async Task<IActionResult> Create([FromForm][Bind("ID,Body,PostID,CommentID,UserID")] Comment comment)
         {
             if (ModelState.IsValid)
             {
@@ -71,7 +71,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Comments/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit([FromRoute] int? id)
         {
             if (id == null )
             {
@@ -97,7 +97,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Body")] Comment comment)
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromForm][Bind("ID,Body")] Comment comment)
         {
             if (id != comment.ID)
             {
@@ -138,7 +138,7 @@ namespace MiniaturesGallery.Controllers
         }
 
         // GET: Comments/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete([FromRoute] int? id)
         {
             if (id == null)
             {
@@ -163,7 +163,7 @@ namespace MiniaturesGallery.Controllers
         // POST: Comments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
         {
             var comment = await _commentsService.GetAsync(id);
             if (comment != null)
