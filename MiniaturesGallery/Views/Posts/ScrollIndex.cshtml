@@ -158,7 +158,7 @@
                         break;
                 }
             }
-            <form asp-action="@action" asp-controller="Rates" method="post">
+            <form asp-action="@action" asp-controller="Rates" method="post" asp-route-postId="@post.ID">
                 <div class="text-center">
                     Rating: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
                 </div>
