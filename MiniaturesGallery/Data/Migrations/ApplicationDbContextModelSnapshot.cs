@@ -249,7 +249,7 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Comment", b =>
@@ -282,7 +282,7 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Post", b =>
@@ -311,7 +311,7 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Rate", b =>
@@ -336,7 +336,7 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("Rates");
+                    b.ToTable("Rates", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

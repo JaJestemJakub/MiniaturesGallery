@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MiniaturesGallery.Models.Post>
+﻿@model MiniaturesGallery.ViewModels.PostsOfUserViewModel
 @{
     ViewData["Title"] = "ScrollIndex";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -10,7 +10,8 @@
     private async Task PresentPageNumberLink(string pageNumber, string symbol, string disabled)
     {
         <li class="page-item" @(disabled)>
-            <a asp-action="ScrollIndex"
+            <a asp-action="ScrollIndexOfUser"
+               asp-route-filtrUserID="@Model.UserID"
                asp-route-pageNumber="@(pageNumber)"
                class="page-link">
                 @(symbol)
@@ -20,40 +21,12 @@
 }
 
 <div class="row d-flex justify-content-center">
-    <div class="col-6 mb-4">
-        <form method="get">
-            <div class="input-group" style="margin-bottom: 5px">
-                @if (ViewBag.DateFrom != "0001-01-01")
-                {
-                    <input type="date" name="dateFrom" class="form-control" value="@ViewBag.DateFrom">
-                }
-                else
-                {
-                    <input type="date" name="dateFrom" class="form-control" value="2022-01-01">
-                }
-                @if (ViewBag.DateTo != "0001-01-01")
-                {
-                    <input type="date" name="dateTo" class="form-control" value="@ViewBag.DateTo">
-                }
-                else
-                {
-                    <input type="date" name="dateTo" class="form-control" value="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")">
-                }
-            </div>
-            <div class="input-group">
-                <input type="text" name="SearchString" class="form-control" value="@ViewBag.SearchString">
-                <select name="OrderByFilter" class="form-select" value="@ViewBag.OrderByFilter" asp-items="Html.GetEnumSelectList<OrderBy>()">
-                    <option value="">Order by</option>
-                </select>
-                <span class="input-group-append">
-                    <button type="submit" class="btn btn-primary" asp-action="ScrollIndex">Search</button>
-                </span>
-            </div>
-        </form>
+    <div class="col-6 mb-4 text-center">
+        <h3>User: @Model.UserName</h3>
     </div>
 </div>
 
-@foreach(Post post in Model)
+@foreach(Post post in Model.PaginatedList)
 {
     <div class="card mb-4">
         <div class="card-body">
@@ -111,7 +84,7 @@
             </div>
         </div>
         <div class="card-footer">
-            <h6><a asp-action="ScrollIndexOfUser" asp-route-filtrUserID="@post.UserID">@(post.User.UserName)</a></h6>
+            <h6>@(post.User.UserName)</h6>
             <h6>@(post.CrateDate)</h6>
             <div class="text-center align-items-center">
                 <h1 style="display: inline;">
@@ -193,10 +166,10 @@
 
 <div>
     @{
-        int pageIndex = (Model as PaginatedList<Post>).PageIndex;
-        int totalPages = (Model as PaginatedList<Post>).TotalPages;
-        var prevDisabled = !(Model as PaginatedList<Post>).HasPreviousPage ? "disabled" : "";
-        var nextDisabled = !(Model as PaginatedList<Post>).HasNextPage ? "disabled" : "";
+        int pageIndex = (Model.PaginatedList as PaginatedList<Post>).PageIndex;
+        int totalPages = (Model.PaginatedList as PaginatedList<Post>).TotalPages;
+        var prevDisabled = !(Model.PaginatedList as PaginatedList<Post>).HasPreviousPage ? "disabled" : "";
+        var nextDisabled = !(Model.PaginatedList as PaginatedList<Post>).HasNextPage ? "disabled" : "";
     }
     <ul class="pagination pagination-lg justify-content-center">
         @{
