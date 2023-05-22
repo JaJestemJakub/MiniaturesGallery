@@ -11,6 +11,7 @@ namespace MiniaturesGallery.Services
         Task<List<Post>> GetAsync();
         Task<PaginatedList<Post>> GetAsyncSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID);
         Task<Post> GetAsync(int id, string UserID);
+        Task<PaginatedList<Post>> GetAsyncOfUser(string filtrUserID, int? pageNumber, string UserID);
         Task<int> CreateAsync(Post post, string UserID);
         Task UpdateAsync(Post post);
         Task DeleteAsync(int id);
@@ -32,6 +33,32 @@ namespace MiniaturesGallery.Services
         public async Task<List<Post>> GetAsync()
         {
             return await _context.Posts.ToListAsync();
+        }
+
+        public async Task<PaginatedList<Post>> GetAsyncOfUser(string filtrUserID, int? pageNumber, string UserID)
+        {
+            IQueryable<Post> posts;
+
+                posts = _context.Posts
+                    .Include(a => a.Attachments)
+                    .Include(a => a.User)
+                    .AsQueryable()
+                    .Where(x => x.UserID == filtrUserID)
+                    .OrderByDescending(x => x.ID);
+
+            foreach (Post post in posts)
+            {
+                post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
+
+                post.Rates = new List<Rate>();
+                post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+                if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == UserID))
+                {
+                    post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
+                }
+            }
+
+            return await PaginatedList<Post>.CreateAsync(posts, pageNumber ?? 1, _pageSize);
         }
 
         public async Task<PaginatedList<Post>> GetAsyncSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID)

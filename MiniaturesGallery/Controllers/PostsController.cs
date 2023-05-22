@@ -23,12 +23,14 @@ namespace MiniaturesGallery.Controllers
         private readonly IPostService _postService;
         private readonly IAttachmentsService _attachmentsService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public PostsController(IPostService postService, IAttachmentsService attachmentsService, IAuthorizationService authorizationService)
+        public PostsController(IPostService postService, IAttachmentsService attachmentsService, IAuthorizationService authorizationService, UserManager<IdentityUser> userManager)
         {
             _postService = postService;
             _attachmentsService = attachmentsService;
             _authorizationService = authorizationService;
+            _userManager = userManager;
         }
 
         // GET: Posts
@@ -52,6 +54,21 @@ namespace MiniaturesGallery.Controllers
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
             return View(await _postService.GetAsyncSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>()));
+        }
+
+
+        // GET: Posts
+        [AllowAnonymous]
+        public async Task<IActionResult> ScrollIndexOfUser([FromQuery] string filtrUserID, [FromQuery] int? pageNumber)
+        {
+            PostsOfUserViewModel viewModel = new PostsOfUserViewModel
+            {
+                PaginatedList = await _postService.GetAsyncOfUser(filtrUserID, pageNumber, User.GetLoggedInUserId<string>()),
+                UserID = filtrUserID,
+                UserName = _userManager.FindByIdAsync(filtrUserID).Result.UserName
+            };
+
+            return View(viewModel);
         }
 
         // GET: Posts/Details/5

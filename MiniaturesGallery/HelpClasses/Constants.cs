@@ -22,5 +22,7 @@ namespace MiniaturesGallery.HelpClasses
         public static readonly string DeleteOperationName = "Delete";
 
         public static readonly string ContactAdministratorsRole = "Administrators";
+
+        public static readonly string DefaultConnection = "DefaultConnection";
     }
 }
