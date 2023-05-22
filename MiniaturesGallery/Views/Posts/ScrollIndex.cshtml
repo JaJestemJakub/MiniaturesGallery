@@ -57,7 +57,7 @@
 {
     <div class="card mb-4">
         <div class="card-body">
-            <div id="carouselImages@(post.ID)" class="carousel slide carousel-dark carousel-fade" data-bs-ride="carousel" data-bs-interval="false">
+            <div id="carouselImages@(post.ID)" class="carousel slide carousel-dark carousel-fade">
                 <div class="carousel-inner">
                     @foreach (var att in post.Attachments)
                     {
@@ -128,7 +128,7 @@
                 }
             </div>
             <div class="text-center align-items-center">
-                <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-muted">(See Details)</a></small>
+                <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-info">(See Details)</a></small>
             </div>
             <h4 style="white-space: pre-line">@post.Text</h4>
             @{

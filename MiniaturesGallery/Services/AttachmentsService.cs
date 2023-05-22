@@ -62,10 +62,7 @@ namespace MiniaturesGallery.Services
             string FilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.FullFileName);
             string FolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.PostID.ToString());
 
-            System.IO.File.Delete(FilePath);
-            string[] files = Directory.GetFiles(FolderPath);
-            if (files.Length == 0)
-                Directory.Delete(FolderPath);
+            DeleteFileIfExistsThenDeleteFolderIfEmpty(FilePath, FolderPath);
 
             await _context.SaveChangesAsync();
         }
@@ -85,10 +82,7 @@ namespace MiniaturesGallery.Services
                     string FilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.FullFileName);
                     string FolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.PostID.ToString());
 
-                    System.IO.File.Delete(FilePath);
-                    string[] files = Directory.GetFiles(FolderPath);
-                    if (files.Length == 0)
-                        Directory.Delete(FolderPath);
+                    DeleteFileIfExistsThenDeleteFolderIfEmpty(FilePath, FolderPath);
                 }
             }
 
@@ -102,6 +96,18 @@ namespace MiniaturesGallery.Services
                 .FirstAsync(x => x.ID == id);
             
             return att;
+        }
+
+        private static void DeleteFileIfExistsThenDeleteFolderIfEmpty(string FilePath, string FolderPath)
+        {
+            if (Directory.Exists(FolderPath))
+            {
+                if (File.Exists(FilePath))
+                    File.Delete(FilePath);
+                string[] files = Directory.GetFiles(FolderPath);
+                if (files.Length == 0)
+                    Directory.Delete(FolderPath);
+            }
         }
     }
 }
