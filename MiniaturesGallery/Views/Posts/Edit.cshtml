@@ -8,7 +8,7 @@
 }
 
 <h4 style="display: inline;">
-    [<a asp-action="Details" asp-route-id="@Model.Post.ID" class="text-secondary">Details</a>]
+    [<a asp-action="Details" asp-route-id="@Model.Post.ID" class="text-info">Details</a>]
 </h4>
 <h4 style="display: inline;">
     [<a asp-action="Delete" asp-route-id="@Model.Post.ID" class="text-danger">Delete</a>]
@@ -38,7 +38,7 @@
 
     <hr />
     <h5>Photos:</h5>
-    <div id="carouselImages" class="carousel slide carousel-dark carousel-fade" data-bs-ride="carousel" data-bs-interval="false">
+    <div id="carouselImages" class="carousel slide carousel-dark carousel-fade">
         <div class="carousel-inner">
             @foreach (var att in Model.Post.Attachments)
             {
