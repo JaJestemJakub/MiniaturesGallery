@@ -26,11 +26,11 @@
     </div>
 </div>
 
-@foreach(Post post in Model.PaginatedList)
+@foreach (Post post in Model.PaginatedList)
 {
     <div class="card mb-4">
         <div class="card-body">
-            <div id="carouselImages@(post.ID)" class="carousel slide carousel-dark carousel-fade">
+            <div id="carouselImages@(post.ID)" class="carousel slide carousel-fade">
                 <div class="carousel-inner">
                     @foreach (var att in post.Attachments)
                     {
@@ -81,10 +81,18 @@
                         }
                     }
                 </div>
+                <button class="carousel-control-prev text-white" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next text-white" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
         </div>
         <div class="card-footer">
-            <h6>@(post.User.UserName)</h6>
+            <h6><a asp-action="ScrollIndexOfUser" asp-route-filtrUserID="@post.UserID">@(post.User.UserName)</a></h6>
             <h6>@(post.CrateDate)</h6>
             <div class="text-center align-items-center">
                 <h1 style="display: inline;">
@@ -131,7 +139,7 @@
                         break;
                 }
             }
-            <form asp-action="@action" asp-controller="Rates" method="post" asp-route-postId="@post.ID">
+            <form asp-action="@action" asp-controller="Rates" method="post" asp-route-id="@(post.Rates.Any() ? post.Rates.First().ID : 0)">
                 <div class="text-center">
                     Rating: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
                 </div>
@@ -142,19 +150,19 @@
                     }
                     <input hidden name="@(nameof(Rate.PostID))" value="@post.ID" />
                     <input hidden name="@(nameof(Rate.UserID))" value="@(User.GetLoggedInUserId<string>())" />
-                    <input type="radio" name="rating" value="5" id="5" @checked5 onclick="$('#collapseSubmitRateButton').collapse('show');">
-                    <label for="5">☆</label>
-                    <input type="radio" name="rating" value="4" id="4" @checked4 onclick="$('#collapseSubmitRateButton').collapse('show');">
-                    <label for="4">☆</label>
-                    <input type="radio" name="rating" value="3" id="3" @checked3 onclick="$('#collapseSubmitRateButton').collapse('show');">
-                    <label for="3">☆</label>
-                    <input type="radio" name="rating" value="2" id="2" @checked2 onclick="$('#collapseSubmitRateButton').collapse('show');">
-                    <label for="2">☆</label>
-                    <input type="radio" name="rating" value="1" id="1" @checked1 onclick="$('#collapseSubmitRateButton').collapse('show');">
-                    <label for="1">☆</label>
+                    <input type="radio" name="rating" value="5" id="@(post.ID)_5" @checked5 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                    <label for="@(post.ID)_5">☆</label>
+                    <input type="radio" name="rating" value="4" id="@(post.ID)_4" @checked4 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                    <label for="@(post.ID)_4">☆</label>
+                    <input type="radio" name="rating" value="3" id="@(post.ID)_3" @checked3 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                    <label for="@(post.ID)_3">☆</label>
+                    <input type="radio" name="rating" value="2" id="@(post.ID)_2" @checked2 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                    <label for="@(post.ID)_2">☆</label>
+                    <input type="radio" name="rating" value="1" id="@(post.ID)_1" @checked1 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                    <label for="@(post.ID)_1">☆</label>
                 </div>
                 <div class="text-center mb-2">
-                    <input type="submit" value="Submit" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton" />
+                    <input type="submit" value="Submit" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton@(post.ID)" />
                 </div>
             </form>
             <div class="text-center">

@@ -149,7 +149,7 @@
                     break;
             }
         }
-        <form asp-action="@action" asp-controller="Rates" method="post" asp-route-postId="@Model.ID">
+        <form asp-action="@action" asp-controller="Rates" method="post" asp-route-id="@(Model.Rates.Any() ? Model.Rates.First().ID : 0)">
             <div class="text-center">
                 Rating: @Model.Rating.ToString("n2") (@Model.NoOfRates.ToString())
             </div>

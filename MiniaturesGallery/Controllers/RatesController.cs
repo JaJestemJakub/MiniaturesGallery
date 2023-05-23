@@ -61,7 +61,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromRoute] int postId, [FromForm][Bind("ID,Rating,PostID,UserID")] Rate rate)
+        public async Task<IActionResult> Create([FromForm][Bind("ID,Rating,PostID,UserID")] Rate rate)
         {
             if (ModelState.IsValid)
             {
