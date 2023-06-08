@@ -179,6 +179,14 @@
         var prevDisabled = !(Model.PaginatedList as PaginatedList<Post>).HasPreviousPage ? "disabled" : "";
         var nextDisabled = !(Model.PaginatedList as PaginatedList<Post>).HasNextPage ? "disabled" : "";
     }
+    <a id="hiddenLink"
+       asp-action="ScrollIndexOfUser"
+       asp-route-SearchString="@ViewBag.SearchString"
+       asp-route-OrderByFilter="@ViewBag.StatusFilter"
+       asp-route-DateFrom="@ViewBag.DateFrom"
+       asp-route-DateTo="@ViewBag.DateTo"
+       hidden>
+    </a>
     <ul class="pagination pagination-lg justify-content-center">
         @{
             await PresentPageNumberLink((pageIndex - 1).ToString(), "«", prevDisabled);
@@ -225,7 +233,3 @@
         }
     </ul>
 </div>
-
-<script>
-    document.getElementsByName("OrderByFilter")[0].value = @Html.Raw(ViewBag.OrderByFilter);
-</script>

@@ -103,6 +103,7 @@ namespace MiniaturesGallery.Services
                             posts = posts.OrderBy(x => x.Rating);
                             break;
                         default:
+                            posts = posts.OrderByDescending(x => x.ID);
                             break;
                     }
                 }
@@ -110,6 +111,10 @@ namespace MiniaturesGallery.Services
                 {
                     posts = posts.OrderByDescending(x => x.ID);
                 }
+            }
+            else
+            {
+                posts = posts.OrderByDescending(x => x.ID);
             }
 
             foreach (Post post in posts)

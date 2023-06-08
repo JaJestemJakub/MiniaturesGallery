@@ -19,8 +19,8 @@
                 </div>             
             </div>
             <div class="">
-                @comm.CrateDate [<a data-bs-toggle="collapse" href="#collapseAddComment_@comm.ID">Answer</a>] 
-                @if(comm.Comments != null){<div style="display: inline;">[<a data-bs-toggle="collapse" href="#collapseShowCommentsOf_@comm.ID">Show Answers (@comm.Comments.Count())</a>]</div>}
+                @comm.CrateDate [<a data-bs-toggle="collapse" href="#collapseAddComment_@comm.ID">Reply</a>] 
+                @if(comm.Comments != null){<div style="display: inline;">[<a data-bs-toggle="collapse" href="#collapseShowCommentsOf_@comm.ID">Show Replies (@comm.Comments.Count())</a>]</div>}
             </div>
             <div class="col-md-4 ms-5 m-2 collapse" id="collapseAddComment_@comm.ID">
                 <form asp-action="Create" asp-controller="Comments">
