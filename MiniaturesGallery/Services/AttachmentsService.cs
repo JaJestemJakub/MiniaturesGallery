@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting.Internal;
+﻿using Microsoft.EntityFrameworkCore;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
-using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 
 namespace MiniaturesGallery.Services
@@ -94,7 +91,7 @@ namespace MiniaturesGallery.Services
             Attachment att = await _context.Attachments
                 .Include(a => a.Post)
                 .FirstAsync(x => x.ID == id);
-            
+
             return att;
         }
 

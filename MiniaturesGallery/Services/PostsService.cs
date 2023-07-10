@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting.Internal;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
@@ -39,12 +38,12 @@ namespace MiniaturesGallery.Services
         {
             IQueryable<Post> posts;
 
-                posts = _context.Posts
-                    .Include(a => a.Attachments)
-                    .Include(a => a.User)
-                    .AsQueryable()
-                    .Where(x => x.UserID == filtrUserID)
-                    .OrderByDescending(x => x.ID);
+            posts = _context.Posts
+                .Include(a => a.Attachments)
+                .Include(a => a.User)
+                .AsQueryable()
+                .Where(x => x.UserID == filtrUserID)
+                .OrderByDescending(x => x.ID);
 
             foreach (Post post in posts)
             {
@@ -85,36 +84,14 @@ namespace MiniaturesGallery.Services
 
             if (String.IsNullOrEmpty(orderByFilter) == false)
             {
-                if (orderByFilter != "")
-                {
-                    int.TryParse(orderByFilter, out int orderByInt);
-                    switch ((OrderBy)orderByInt)
-                    {
-                        case OrderBy.DateDesc:
-                            posts = posts.OrderByDescending(x => x.CrateDate);
-                            break;
-                        case OrderBy.DateAsc:
-                            posts = posts.OrderBy(x => x.CrateDate);
-                            break;
-                        case OrderBy.RatesDesc:
-                            posts = posts.OrderByDescending(x => x.Rating);
-                            break;
-                        case OrderBy.RatesAsc:
-                            posts = posts.OrderBy(x => x.Rating);
-                            break;
-                        default:
-                            posts = posts.OrderByDescending(x => x.ID);
-                            break;
-                    }
-                }
-                else
-                {
-                    posts = posts.OrderByDescending(x => x.ID);
-                }
+                bool desc = orderByFilter.EndsWith("_desc") ? true : false;
+                string sortProperty = orderByFilter.EndsWith("_desc") ? orderByFilter.Replace("_desc", "") : orderByFilter;
+
+                posts = posts.OrderBy(sortProperty, desc);
             }
             else
             {
-                posts = posts.OrderByDescending(x => x.ID);
+                posts = posts.OrderBy(nameof(Post.ID), true);
             }
 
             foreach (Post post in posts)

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniaturesGallery.Data;
-using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 
 namespace MiniaturesGallery.Services

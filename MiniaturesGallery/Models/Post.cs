@@ -7,8 +7,8 @@ namespace MiniaturesGallery.Models
 {
     public class Post : OwnedAbs
     {
-        public Post(string userID) : base(userID){}
-        public Post() : base(OwnedAbs.Anynomus) {}
+        public Post(string userID) : base(userID) { }
+        public Post() : base(OwnedAbs.Anynomus) { }
 
         public int ID { get; set; }
         public string? Topic { get; set; }
@@ -17,7 +17,7 @@ namespace MiniaturesGallery.Models
         public float Rating { get; set; }
         public DateTime CrateDate { get; set; }
         [NotMapped]
-        public int NoOfRates { get; set; }        
+        public int NoOfRates { get; set; }
         [NotMapped]
         public int NoOfComments { get; set; }
 

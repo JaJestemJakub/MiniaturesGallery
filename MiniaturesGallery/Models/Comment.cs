@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MiniaturesGallery.Models.Abstracts;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace MiniaturesGallery.Models
 {

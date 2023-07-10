@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Internal;
-using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
@@ -19,7 +11,7 @@ using MiniaturesGallery.ViewModels;
 namespace MiniaturesGallery.Controllers
 {
     public class PostsController : Controller
-    {       
+    {
         private readonly IPostService _postService;
         private readonly IAttachmentsService _attachmentsService;
         private readonly IAuthorizationService _authorizationService;
@@ -80,7 +72,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var post = await _postService.GetAsync((int) id, User.GetLoggedInUserId<string>());
+            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -214,7 +206,7 @@ namespace MiniaturesGallery.Controllers
 
                 await _postService.DeleteAsync(id);
             }
-            
+
             return RedirectToAction(nameof(Index));
         }
 
