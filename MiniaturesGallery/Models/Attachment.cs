@@ -1,12 +1,11 @@
 ﻿using MiniaturesGallery.Models.Abstracts;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MiniaturesGallery.Models
 {
     public class Attachment : OwnedAbs
     {
-        public Attachment(string userID) : base(userID){}
-        public Attachment() : base(OwnedAbs.Anynomus) {}
+        public Attachment(string userID) : base(userID) { }
+        public Attachment() : base(OwnedAbs.Anynomus) { }
 
         public int ID { get; set; }
         public string? FileName { get; set; }

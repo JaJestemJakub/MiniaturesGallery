@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniaturesGallery.Extensions;
 using MiniaturesGallery.Models;
 using System.Diagnostics;
 

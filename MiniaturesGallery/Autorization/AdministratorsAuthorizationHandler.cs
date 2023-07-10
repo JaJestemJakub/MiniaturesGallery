@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using MiniaturesGallery.Models.Abstracts;
 
 namespace MiniaturesGallery.Autorization
