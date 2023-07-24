@@ -5,19 +5,6 @@
     @using MiniaturesGallery.HelpClasses
     @using MiniaturesGallery.Extensions
 }
-@functions
-{
-    private async Task PresentPageNumberLink(string pageNumber, string symbol, string disabled)
-    {
-        <li class="page-item" @(disabled)>
-            <a asp-action="ScrollIndex"
-               asp-route-pageNumber="@(pageNumber)"
-               class="page-link">
-                @(symbol)
-            </a>
-        </li>
-    }
-}
 
 <div class="row d-flex justify-content-center">
     <div class="col-6 mb-4">
@@ -112,11 +99,11 @@
                         }
                     }
                 </div>
-                <button class="carousel-control-prev text-white" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
                 </button>
-                <button class="carousel-control-next text-white" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
                 </button>
@@ -203,71 +190,11 @@
     </div>
 }
 
-<div>
-    @{
-        int pageIndex = (Model as PaginatedList<Post>).PageIndex;
-        int totalPages = (Model as PaginatedList<Post>).TotalPages;
-        var prevDisabled = !(Model as PaginatedList<Post>).HasPreviousPage ? "disabled" : "";
-        var nextDisabled = !(Model as PaginatedList<Post>).HasNextPage ? "disabled" : "";
-    }
-    <a id="hiddenLink"
-       asp-action="ScrollIndex"
-       asp-route-SearchString="@ViewBag.SearchString"
-       asp-route-OrderByFilter="@ViewBag.StatusFilter"
-       asp-route-DateFrom="@ViewBag.DateFrom"
-       asp-route-DateTo="@ViewBag.DateTo"
-       hidden>
-    </a>
-    <ul class="pagination pagination-lg justify-content-center">
-        @{
-            await PresentPageNumberLink((pageIndex - 1).ToString(), "«", prevDisabled);
-        }
-        @if (pageIndex != 1)
-        {
-            await PresentPageNumberLink("1", "1","");
-        }
-        @if (pageIndex > 4)
-        {
-            <li class="page-item">
-                <a onclick="redirectToPage()" class="page-link">...</a>
-            </li>
-        }
-        @if (pageIndex > 3)
-        {
-            await PresentPageNumberLink((pageIndex - 2).ToString(), (pageIndex - 2).ToString(), "");
-        }
-        @if (pageIndex > 2)
-        {
-            await PresentPageNumberLink((pageIndex - 1).ToString(), (pageIndex - 1).ToString(), "");
-        }
-        <li class="page-item active"><a class="page-link">@(pageIndex)</a></li>
-        @if ((totalPages - pageIndex) > 0)
-        {
-            await PresentPageNumberLink((pageIndex + 1).ToString(), (pageIndex + 1).ToString(), "");
-        }
-        @if ((totalPages - pageIndex) > 1)
-        {
-            await PresentPageNumberLink((pageIndex + 2).ToString(), (pageIndex + 2).ToString(), "");
-        }
-        @if ((totalPages - pageIndex) > 3)
-        {
-            <li class="page-item">
-                <a onclick="redirectToPage()" class="page-link">...</a>
-            </li>
-        }
-        @if ((totalPages - pageIndex) > 2)
-        {
-            await PresentPageNumberLink((totalPages).ToString(), (totalPages).ToString(), "");
-        }
-        @{
-            await PresentPageNumberLink((pageIndex + 1).ToString(), "»", nextDisabled);
-        }
-    </ul>
-</div>
+<partial name="_Pagination" />
 
 @if (ViewBag.OrderByFilter != null)
 {
     <script>
-        document.getElementsByName("OrderByFilter")[0].value = @Html.Raw(ViewBag.OrderByFilter);
+        $("[name='OrderByFilter']")[0].value = '@Html.Raw(ViewBag.OrderByFilter)';
     </script>
 }

@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 using MiniaturesGallery.Services;
 using MiniaturesGallery.ViewModels;
+using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace MiniaturesGallery.Controllers
 {
@@ -16,6 +19,7 @@ namespace MiniaturesGallery.Controllers
         private readonly IAttachmentsService _attachmentsService;
         private readonly IAuthorizationService _authorizationService;
         private readonly UserManager<IdentityUser> _userManager;
+        private const int _pageSize = 10;
 
         public PostsController(IPostService postService, IAttachmentsService attachmentsService, IAuthorizationService authorizationService, UserManager<IdentityUser> userManager)
         {
@@ -27,9 +31,22 @@ namespace MiniaturesGallery.Controllers
 
         // GET: Posts
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromQuery] string searchString, [FromQuery] string orderByFilter, [FromQuery] DateTime dateFrom, [FromQuery] DateTime dateTo, [FromQuery] int? pageNumber)
         {
-            return View(await _postService.GetAsync());
+            ViewBag.SearchString = searchString;
+            ViewBag.OrderByFilter = orderByFilter;
+            if (dateFrom == DateTime.MinValue)
+                dateFrom = DateTime.Today.AddMonths(-1);
+            ViewBag.DateFrom = dateFrom.ToString("yyyy-MM-dd");
+            if (dateTo == DateTime.MinValue)
+                dateTo = DateTime.Today;
+            ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
+
+            var tmpList = _postService.GetSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>());
+            var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
+            PgList.Action = nameof(PostsController.Index);
+
+            return View(PgList);
         }
 
         // GET: Posts
@@ -45,7 +62,11 @@ namespace MiniaturesGallery.Controllers
                 dateTo = DateTime.Today;
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
-            return View(await _postService.GetAsyncSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>()));
+            var tmpList = _postService.GetSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>());
+            var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
+            PgList.Action = nameof(PostsController.Index);
+
+            return View(PgList);
         }
 
 
@@ -53,14 +74,13 @@ namespace MiniaturesGallery.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ScrollIndexOfUser([FromQuery] string filtrUserID, [FromQuery] int? pageNumber)
         {
-            PostsOfUserViewModel viewModel = new PostsOfUserViewModel
-            {
-                PaginatedList = await _postService.GetAsyncOfUser(filtrUserID, pageNumber, User.GetLoggedInUserId<string>()),
-                UserID = filtrUserID,
-                UserName = _userManager.FindByIdAsync(filtrUserID).Result.UserName
-            };
+            var tmpList = _postService.GetOfUser(filtrUserID, pageNumber, User.GetLoggedInUserId<string>());
+            var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
+            PgList.Action = nameof(PostsController.ScrollIndexOfUser);
+            PgList.UserID = filtrUserID;
+            ViewBag.UserName = _userManager.FindByIdAsync(filtrUserID).Result.UserName;
 
-            return View(viewModel);
+            return View(PgList);
         }
 
         // GET: Posts/Details/5
@@ -72,7 +92,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -107,7 +127,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -133,7 +153,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var postFromDB = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            var postFromDB = _postService.Get((int)id, User.GetLoggedInUserId<string>());
             if (postFromDB == null)
             {
                 return NotFound();
@@ -175,7 +195,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();
@@ -195,7 +215,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
         {
-            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
             if (post != null)
             {
                 var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
@@ -214,7 +234,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAttachment([FromRoute] int id, [FromForm][Bind("ID", "Files")] PostEditViewModel postViewModel)
         {
-            var post = await _postService.GetAsync((int)id, User.GetLoggedInUserId<string>());
+            var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
             if (post == null)
             {
                 return NotFound();

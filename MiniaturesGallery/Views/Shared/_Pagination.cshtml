@@ -1,0 +1,117 @@
+﻿@model IEnumerable<MiniaturesGallery.Models.Post>
+
+@{
+    @using MiniaturesGallery.HelpClasses
+    @using MiniaturesGallery.Extensions
+}
+
+@functions
+{
+    public async Task PaginationPageNumberLink(string pageNumber, string symbol, string disabled, string action, string UserID, string SearchString, string OrderByFilter, string DateFrom, string DateTo)
+    {
+        if (UserID != "")
+        {
+            <li class="page-item @(disabled)">
+                <a asp-action="@action"
+                    asp-route-filtrUserID="@UserID"
+                    asp-route-SearchString="@SearchString"
+                    asp-route-OrderByFilter="@OrderByFilter"
+                    asp-route-DateFrom="@DateFrom"
+                    asp-route-DateTo="@DateTo"
+                    asp-route-pageNumber="@(pageNumber)"
+                    class="page-link">
+                    @(symbol)
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item @(disabled)">
+                <a asp-action="@action"
+                    asp-route-SearchString="@SearchString"
+                    asp-route-OrderByFilter="@OrderByFilter"
+                    asp-route-DateFrom="@DateFrom"
+                    asp-route-DateTo="@DateTo"
+                    asp-route-pageNumber="@(pageNumber)"
+                    class="page-link">
+                    @(symbol)
+                </a>
+            </li>
+        }
+    }
+}
+@{
+    var PgList = (Model as PaginatedList<Post>);
+    int pageIndex = PgList.PageIndex;
+    int totalPages = PgList.TotalPages;
+    var prevDisabled = !PgList.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !PgList.HasNextPage ? "disabled" : "";
+}
+
+@if (PgList.UserID != "")
+{
+    <a asp-action="@PgList.Action"
+        asp-route-filtrUserID="@PgList.UserID"
+        asp-route-SearchString="@ViewBag.SearchString"
+        asp-route-OrderByFilter="@ViewBag.OrderByFilter"
+        asp-route-DateFrom="@ViewBag.DateFrom"
+        asp-route-DateTo="@ViewBag.DateTo"
+        hidden>
+    </a>
+}
+else
+{
+    <a asp-action="@PgList.Action"
+        asp-route-SearchString="@ViewBag.SearchString"
+        asp-route-OrderByFilter="@ViewBag.OrderByFilter"
+        asp-route-DateFrom="@ViewBag.DateFrom"
+        asp-route-DateTo="@ViewBag.DateTo"
+        hidden>
+    </a>
+}
+<ul class="pagination pagination-lg justify-content-center">
+    @{
+        await PaginationPageNumberLink((pageIndex - 1).ToString(), "«", prevDisabled, PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    @if (pageIndex != 1)
+    {
+        await PaginationPageNumberLink("1", "1", "", PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    @if (pageIndex > 4)
+    {
+        <li class="page-item">
+            <a onclick="redirectToPage()" class="page-link">...</a>
+        </li>
+    }
+    @if (pageIndex > 3)
+    {
+        await PaginationPageNumberLink((pageIndex - 2).ToString(), (pageIndex - 2).ToString(), "", PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    @if (pageIndex > 2)
+    {
+        await PaginationPageNumberLink((pageIndex - 1).ToString(), (pageIndex - 1).ToString(), "", PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    <li class="page-item active"><a class="page-link">@(pageIndex)</a></li>
+    @if ((totalPages - pageIndex) > 0)
+    {
+        await PaginationPageNumberLink((pageIndex + 1).ToString(), (pageIndex + 1).ToString(), "", PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    @if ((totalPages - pageIndex) > 1)
+    {
+        await PaginationPageNumberLink((pageIndex + 2).ToString(), (pageIndex + 2).ToString(), "", PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    @if ((totalPages - pageIndex) > 3)
+    {
+        <li class="page-item">
+            <a onclick="redirectToPage()" class="page-link">...</a>
+        </li>
+    }
+    @if ((totalPages - pageIndex) > 2)
+    {
+        await PaginationPageNumberLink((totalPages).ToString(), (totalPages).ToString(), "", PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+    @{
+        await PaginationPageNumberLink((pageIndex + 1).ToString(), "»", nextDisabled, PgList.Action, PgList.UserID, ViewBag.SearchString, ViewBag.OrderByFilter, ViewBag.DateFrom, ViewBag.DateTo);
+    }
+</ul>
+

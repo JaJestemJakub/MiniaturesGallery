@@ -53,6 +53,7 @@ namespace MiniaturesGallery.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Create([FromForm][Bind("ID,Body,PostID,CommentID,UserID")] Comment comment)
         {
             if (ModelState.IsValid)
