@@ -2,6 +2,7 @@
 using MiniaturesGallery.Models.Abstracts;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MiniaturesGallery.Models
 {
@@ -15,6 +16,7 @@ namespace MiniaturesGallery.Models
         [Display(Name = "Description")]
         public string? Text { get; set; }
         public float Rating { get; set; }
+        [Display(Name = "Crate Date")]
         public DateTime CrateDate { get; set; }
         [NotMapped]
         public int NoOfRates { get; set; }

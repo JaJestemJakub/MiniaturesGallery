@@ -1,33 +1,138 @@
 ﻿@model IEnumerable<MiniaturesGallery.Models.Post>
-
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    @using MiniaturesGallery.HelpClasses
+    @using MiniaturesGallery.Extensions
+    string orderBy;
 }
 
-<h1>Index</h1>
+<h1>Posts</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
-<table class="table">
-    <thead>
+
+<form method="get">
+    <div class="row" style="margin-bottom: 5px">
+        <div class="col-auto">
+            <label class="control-label mt-2 mr-2">@Html.DisplayNameFor(model => model.CrateDate):</label>
+        </div>
+        <div class="col-auto">
+            <div class="input-group">
+                @if (ViewBag.DateFrom != "0001-01-01")
+                {
+                    <input type="date" name="dateFrom" class="form-control" value="@ViewBag.DateFrom">
+                }
+                else
+                {
+                    <input type="date" name="dateFrom" class="form-control" value="2022-01-01">
+                }
+                @if (ViewBag.DateTo != "0001-01-01")
+                {
+                    <input type="date" name="dateTo" class="form-control" value="@ViewBag.DateTo">
+                }
+                else
+                {
+                    <input type="date" name="dateTo" class="form-control" value="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")">
+                }
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-auto">
+            <label class="control-label mt-2 mr-2">Search:</label>
+        </div>
+        <div class="col-auto">
+            <div class="input-group">
+                <input type="text" name="SearchString" class="form-control" value="@ViewBag.SearchString">
+                <select name="OrderByFilter" class="form-select" value="@ViewBag.OrderByFilter">
+                    <option value="">Order by</option>
+                    <option value="@(nameof(Post.CrateDate)+"_desc")">Date Descending</option>
+                    <option value="@(nameof(Post.CrateDate))">Date Ascending</option>
+                    <option value="@(nameof(Post.Rating)+"_desc")">Rates Descending</option>
+                    <option value="@(nameof(Post.Rating))">Rates Ascending</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary" asp-action="Index">Show</button>
+        </div>
+    </div>
+</form>
+<br />
+<table class="table table-sm table-bordered table-hover table-striped table-dark">
+    <thead class="sticky">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Topic)
+                @{orderBy = ViewBag.OrderByFilter == nameof(Post.ID) ? nameof(Post.ID) + "_desc" : nameof(Post.ID);}
+                <a asp-action="Index"
+                   asp-route-OrderByFilter="@orderBy"
+                   asp-route-SearchString="@ViewBag.SearchString"
+                   asp-route-DateFrom="@ViewBag.DateFrom"
+                   asp-route-DateTo="@ViewBag.DateTo">
+                    @Html.DisplayNameFor(model => model.ID)@if (@ViewBag.OrderByFilter == nameof(Post.ID))
+                    {<text>&#9660;</text>}@if (@ViewBag.OrderByFilter == nameof(Post.ID) + "_desc")
+                    {<text>&#9650;</text>}
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Text)
+                @{orderBy = ViewBag.OrderByFilter == nameof(Post.Topic) ? nameof(Post.Topic) + "_desc" : nameof(Post.Topic);}
+                <a asp-action="Index"
+                   asp-route-OrderByFilter="@orderBy"
+                   asp-route-SearchString="@ViewBag.SearchString"
+                   asp-route-DateFrom="@ViewBag.DateFrom"
+                   asp-route-DateTo="@ViewBag.DateTo">
+                    @Html.DisplayNameFor(model => model.Topic)@if (@ViewBag.OrderByFilter == nameof(Post.Topic))
+                    {<text>&#9660;</text>}@if (@ViewBag.OrderByFilter == nameof(Post.Topic) + "_desc")
+                    {<text>&#9650;</text>}
+                </a>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CrateDate)
+                @{orderBy = ViewBag.OrderByFilter == nameof(Post.Text) ? nameof(Post.Text) + "_desc" : nameof(Post.Text);}
+                <a asp-action="Index"
+                   asp-route-OrderByFilter="@orderBy"
+                   asp-route-SearchString="@ViewBag.SearchString"
+                   asp-route-DateFrom="@ViewBag.DateFrom"
+                   asp-route-DateTo="@ViewBag.DateTo">
+                    @Html.DisplayNameFor(model => model.Text)@if (@ViewBag.OrderByFilter == nameof(Post.Text))
+                    {<text>&#9660;</text>}@if (@ViewBag.OrderByFilter == nameof(Post.Text) + "_desc")
+                    {<text>&#9650;</text>}
+                </a>
+            </th>
+            <th>
+                @{orderBy = ViewBag.OrderByFilter == nameof(Post.Rating) ? nameof(Post.Rating) + "_desc" : nameof(Post.Rating);}
+                <a asp-action="Index"
+                   asp-route-OrderByFilter="@orderBy"
+                   asp-route-SearchString="@ViewBag.SearchString"
+                   asp-route-DateFrom="@ViewBag.DateFrom"
+                   asp-route-DateTo="@ViewBag.DateTo">
+                    @Html.DisplayNameFor(model => model.Rating)@if (@ViewBag.OrderByFilter == nameof(Post.Rating))
+                    {<text>&#9660;</text>}@if (@ViewBag.OrderByFilter == nameof(Post.Rating) + "_desc")
+                    {<text>&#9650;</text>}
+                </a>
+            </th>
+            <th>
+                @{orderBy = ViewBag.OrderByFilter == nameof(Post.CrateDate) ? nameof(Post.CrateDate) + "_desc" : nameof(Post.CrateDate);}
+                <a asp-action="Index"
+                   asp-route-OrderByFilter="@orderBy"
+                   asp-route-SearchString="@ViewBag.SearchString"
+                   asp-route-DateFrom="@ViewBag.DateFrom"
+                   asp-route-DateTo="@ViewBag.DateTo">
+                    @Html.DisplayNameFor(model => model.CrateDate)@if (@ViewBag.OrderByFilter == nameof(Post.CrateDate))
+                    {<text>&#9660;</text>}@if (@ViewBag.OrderByFilter == nameof(Post.CrateDate) + "_desc")
+                    {<text>&#9650;</text>}
+                </a>
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+    @foreach (var item in Model) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ID)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Topic)
             </td>
@@ -35,14 +140,28 @@
                 @Html.DisplayFor(modelItem => item.Text)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.Rating)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.CrateDate)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.ID">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ID">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ID">Delete</a>
+                <div class="btn-group">
+                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.ID" class="btn btn-primary btn-sm">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.ID" class="btn btn-danger btn-sm">Delete</a>
+                </div>
             </td>
         </tr>
-}
+    }
     </tbody>
 </table>
+
+<partial name="_Pagination"/>
+
+@if (ViewBag.OrderByFilter != null)
+{
+    <script>
+        $("[name='OrderByFilter']")[0].value = '@Html.Raw(ViewBag.OrderByFilter)';
+    </script>
+}

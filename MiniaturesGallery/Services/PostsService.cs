@@ -7,10 +7,10 @@ namespace MiniaturesGallery.Services
 {
     public interface IPostService
     {
-        Task<List<Post>> GetAsync();
-        Task<PaginatedList<Post>> GetAsyncSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID);
-        Task<Post> GetAsync(int id, string UserID);
-        Task<PaginatedList<Post>> GetAsyncOfUser(string filtrUserID, int? pageNumber, string UserID);
+        IQueryable<Post> Get();
+        IQueryable<Post> GetSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID);
+        IQueryable<Post> GetOfUser(string filtrUserID, int? pageNumber, string UserID);
+        Post Get(int id, string UserID);
         Task<int> CreateAsync(Post post, string UserID);
         Task UpdateAsync(Post post);
         Task DeleteAsync(int id);
@@ -19,7 +19,6 @@ namespace MiniaturesGallery.Services
 
     public class PostsService : IPostService
     {
-        private const int _pageSize = 10;
         private readonly ApplicationDbContext _context;
         private readonly IAttachmentsService _attachmentsService;
 
@@ -29,12 +28,12 @@ namespace MiniaturesGallery.Services
             _context = context;
         }
 
-        public async Task<List<Post>> GetAsync()
+        public IQueryable<Post> Get()
         {
-            return await _context.Posts.ToListAsync();
+            return _context.Posts.AsQueryable();
         }
 
-        public async Task<PaginatedList<Post>> GetAsyncOfUser(string filtrUserID, int? pageNumber, string UserID)
+        public IQueryable<Post> GetOfUser(string filtrUserID, int? pageNumber, string UserID)
         {
             IQueryable<Post> posts;
 
@@ -57,10 +56,10 @@ namespace MiniaturesGallery.Services
                 }
             }
 
-            return await PaginatedList<Post>.CreateAsync(posts, pageNumber ?? 1, _pageSize);
+            return posts;
         }
 
-        public async Task<PaginatedList<Post>> GetAsyncSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID)
+        public IQueryable<Post> GetSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID)
         {
             IQueryable<Post> posts;
             if (String.IsNullOrEmpty(searchString) == false)
@@ -106,29 +105,32 @@ namespace MiniaturesGallery.Services
                 }
             }
 
-            return await PaginatedList<Post>.CreateAsync(posts, pageNumber ?? 1, _pageSize);
+            return posts;
         }
 
-        public async Task<Post> GetAsync(int id, string UserID)
+        public Post Get(int id, string UserID)
         {
-            var post = await _context.Posts
+            var post = _context.Posts
                 .Include(a => a.Attachments)
                 .Include(a => a.User)
                 .Include(a => a.Coments)
-                .FirstOrDefaultAsync(m => m.ID == id);
+                .FirstOrDefault(m => m.ID == id);
 
-            foreach (var comment in post.Coments)
+            if(post.Coments != null)
             {
-                if (comment.UserID != null)
-                    comment.User = _context.Users.FirstOrDefault(x => x.Id == comment.UserID);
-                if (comment.CommentID != null)
+                foreach (var comment in post.Coments)
                 {
-                    var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
-                    if (parent != null)
+                    if (comment.UserID != null)
+                        comment.User = _context.Users.FirstOrDefault(x => x.Id == comment.UserID);
+                    if (comment.CommentID != null)
                     {
-                        parent.Comments.Add(comment);
+                        var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
+                        if (parent != null)
+                        {
+                            parent.Comments.Add(comment);
+                        }
+                        post.Coments.Remove(comment);
                     }
-                    post.Coments.Remove(comment);
                 }
             }
 

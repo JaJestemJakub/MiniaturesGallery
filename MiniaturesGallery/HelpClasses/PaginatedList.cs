@@ -6,11 +6,15 @@ namespace MiniaturesGallery.HelpClasses
     {
         public int PageIndex { get; private set; }
         public int TotalPages { get; private set; }
+        public string Action { get; set; }
+        public string UserID { get; set; }
 
         public PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
         {
             PageIndex = pageIndex;
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+            Action = "";
+            UserID = "";
 
             AddRange(items);
         }

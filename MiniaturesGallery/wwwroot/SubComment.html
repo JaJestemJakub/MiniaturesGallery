@@ -1,0 +1,20 @@
+﻿<div class="ms-5" ng-if="item.Comments && item.Comments.length > 0">
+    <div ng-repeat="item in item.Comments">
+        <div class="card border">
+            <div class="card-header">
+                <h5>
+                    {{item.User.UserName != null && item.User.UserName || 'Guest'}}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{item.Body}}</p>
+            </div>
+        </div>
+        {{item.CrateDate | date:'dd.MM.yyyy H:mm:ss'}}
+        <div ng-switch="item.Comments.length > 0">
+            <div ng-switch-when="true">
+                <div ng-include="'../SubComment.html'"></div>
+            </div>
+        </div>
+    </div>
+</div>

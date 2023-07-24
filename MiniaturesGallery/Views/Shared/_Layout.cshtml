@@ -7,6 +7,10 @@
     <link href="~/lib/bootstrap/bootstrap.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MiniaturesGallery.styles.css" asp-append-version="true" />
+    <script src="~/angular.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 </head>
 <body>
     <header>
@@ -22,11 +26,22 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Posts" asp-action="ScrollIndex">Posts</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle btn btn-primary" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Posts</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Posts" asp-action="Index">Index</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Posts" asp-action="ScrollIndex">ScrollIndex</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Posts" asp-action="Create">Add Post</a>
+                                </li>
+                            </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Posts" asp-action="Create">Add Post</a>
+                            <a class="nav-link" asp-controller="PostsAngular" asp-action="IndexAngular">Posts AngularJS</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -45,9 +60,6 @@
             &copy; 2022 - MiniaturesGallery
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
