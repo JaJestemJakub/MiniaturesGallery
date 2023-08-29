@@ -1,9 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MiniaturesGallery;
 using MiniaturesGallery.Autorization;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +35,24 @@ builder.Services.AddScoped<IAttachmentsService, AttachmentsService>();
 builder.Services.AddScoped<IRatesService, RatesService>();
 builder.Services.AddScoped<ICommentsService, CommentsService>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddMvc()
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization(options => {
+        options.DataAnnotationLocalizerProvider = (type, factory) =>
+            factory.Create(typeof(SharedResource));
+    });
+builder.Services.Configure<RequestLocalizationOptions>(opts =>{
+    var supportedCultures = new List<CultureInfo>
+    {
+        new CultureInfo("en"),
+        new CultureInfo("pl")
+    };
 
+    opts.DefaultRequestCulture = new RequestCulture("en");
+    opts.SupportedCultures = supportedCultures;
+    opts.SupportedUICultures = supportedCultures;
+});
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -65,6 +88,9 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+var options = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(options.Value);
 
 app.MapControllerRoute(
     name: "default",

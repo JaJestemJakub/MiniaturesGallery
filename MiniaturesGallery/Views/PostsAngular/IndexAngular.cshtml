@@ -32,7 +32,7 @@
                 data: $scope.post
             }).then(function (response) {
                 $scope.modelData = JSON.parse(response.data);
-                $scope.message = "Post added Successfully";
+                $scope.message = "@Localizer["Post added Successfully"]";
 
                 var modal = bootstrap.Modal.getOrCreateInstance('#CreatePost');
                 modal.hide();
@@ -48,7 +48,7 @@
                 data: $scope.post
             }).then(function (response) {
                 $scope.modelData = JSON.parse(response.data);
-                $scope.message = "Post updated Successfully";
+                $scope.message = "@Localizer["Post updated Successfully"]";
 
                 var modal = bootstrap.Modal.getOrCreateInstance('#UpdatePost');
                 modal.hide();
@@ -64,7 +64,7 @@
                 data: $scope.post
             }).then(function (response) {
                 $scope.modelData = JSON.parse(response.data);
-                $scope.messageDanger = "Post deleted Successfully";
+                $scope.messageDanger = "@Localizer["Post deleted Successfully"]";
 
                 var modal = bootstrap.Modal.getOrCreateInstance('#DeletePost');
                 modal.hide();
@@ -106,17 +106,17 @@
 </script>
 
 <div ng-app="IndexApp" ng-controller="IndexController" ng-init="GetAllData()">
-    <h1>Posts</h1>
+    <h1>@Localizer["Posts"]</h1>
 
     <p>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#CreatePost" ng-click="clearPost()">Create New</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#CreatePost" ng-click="clearPost()">@Localizer["Create New"]</button>
     </p>
     <div class="alert alert-success" ng-if="message">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Localizer["Close"]"></button>
         {{message}}
     </div>
     <div class="alert alert-danger" ng-if="messageDanger">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Localizer["Close"]"></button>
         {{messageDanger}}
     </div>
     <table class="table table-sm table-bordered table-hover table-striped table-dark">
@@ -153,9 +153,9 @@
                 </td>
                 <td>
                     <div class="btn-group">
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#UpdatePost" ng-click="selectPost(entity)">Edit</button>
-                        <button class="btn btn-primary btn-sm" ng-click="DetailPost(entity)">Details</button>
-                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#DeletePost" ng-click="selectPost(entity)">Delete</button>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#UpdatePost" ng-click="selectPost(entity)">@Localizer["Edit"]</button>
+                        <button class="btn btn-primary btn-sm" ng-click="DetailPost(entity)">@Localizer["Details"]</button>
+                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#DeletePost" ng-click="selectPost(entity)">@Localizer["Delete"]</button>
                     </div>
                 </td>
             </tr>
@@ -167,8 +167,8 @@
             <div class="modal-content">
                 <form name="Post" data-ng-submit="CreatePost()">
                     <div class="modal-header">
-                        <h4 class="modal-title">Add Post</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h4 class="modal-title">@Localizer["Add Post"]</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
@@ -181,8 +181,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                     </div>
                 </form>
             </div>
@@ -194,8 +194,8 @@
             <div class="modal-content">
                 <form name="Post" data-ng-submit="UpdatePost()">
                     <div class="modal-header">
-                        <h4 class="modal-title">Update Post</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h4 class="modal-title">@Localizer["Update Post"]</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
@@ -212,8 +212,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                     </div>
                 </form>
             </div>
@@ -226,11 +226,11 @@
                 <form name="Post" data-ng-submit="DeletePost()">
                     <div class="modal-header">
                         <h4 class="modal-title">Delete Post</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="control-label">Are you sure?</label>
+                            <label class="control-label">@Localizer["Are you sure?"]</label>
                         </div>
                         <div class="form-group">
                             <label asp-for="@Model.ID" class="control-label"></label>
@@ -246,8 +246,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-danger">@Localizer["Delete"]</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                     </div>
                 </form>
             </div>
@@ -258,8 +258,8 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Detail Post</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h4 class="modal-title">@Localizer["Details"] @Localizer["Post"]</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                 </div>
                 <div class="modal-body">
                     <div class="text-center align-items-center">
@@ -290,11 +290,11 @@
                             </div>
                             <button class="carousel-control-prev text-white" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
+                                <span class="visually-hidden">@Localizer["Previous"]</span>
                             </button>
                             <button class="carousel-control-next text-white" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
                                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
+                                <span class="visually-hidden">@Localizer["Next"]</span>
                             </button>
                         </div>
                     </div>
@@ -322,7 +322,7 @@
 
                     <hr />
                     <div class="col-md-12">
-                        <h5>Comments:</h5>
+                        <h5>@Localizer["Comments"]:</h5>
                         <div ng-repeat="item in post.Coments">
                             <div class="card border">
                                 <div class="card-header">
@@ -359,7 +359,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                 </div>
             </div>
         </div>

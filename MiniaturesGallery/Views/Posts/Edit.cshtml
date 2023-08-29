@@ -8,10 +8,10 @@
 }
 
 <h4 style="display: inline;">
-    [<a asp-action="Details" asp-route-id="@Model.Post.ID" class="text-info">Details</a>]
+    [<a asp-action="Details" asp-route-id="@Model.Post.ID" class="text-info">@Localizer["Details"]</a>]
 </h4>
 <h4 style="display: inline;">
-    [<a asp-action="Delete" asp-route-id="@Model.Post.ID" class="text-danger">Delete</a>]
+    [<a asp-action="Delete" asp-route-id="@Model.Post.ID" class="text-danger">@Localizer["Delete"]</a>]
 </h4>
 <div class="row">
     <div class="col-md-4">
@@ -31,13 +31,13 @@
                 <span asp-validation-for="Post.Text" class="text-danger"></span>
             </div>
             <div class="form-group mb-2">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="@Localizer["Save"]" class="btn btn-primary" />
             </div>
         </form>
     </div>
 
     <hr />
-    <h5>Photos:</h5>
+    <h5>@Localizer["Photos"]:</h5>
     <div id="carouselImages" class="carousel slide carousel-fade">
         <div class="carousel-inner">
             @foreach (var att in Model.Post.Attachments)
@@ -53,8 +53,8 @@
                     </div>
                     <div class="text-center">
                         <a style="margin-right: 5px" href="~/Files/@att.FullFileName">@att.FileName</a>
-                        <form method="post" asp-controller="Posts" asp-action="DeleteAttachment" asp-route-id="@att.ID" data-confirm="Are you sure you want to delete this attachment?" style="display: contents">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        <form method="post" asp-controller="Posts" asp-action="DeleteAttachment" asp-route-id="@att.ID" data-confirm="@Localizer["Are you sure you want to delete this attachment?"]" style="display: contents">
+                            <button type="submit" class="btn btn-danger btn-sm">@Localizer["Delete"]</button>
                         </form>
                     </div>
                 </div>
@@ -63,13 +63,13 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">@att.FileName</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                             </div>
                             <div class="modal-body d-flex align-items-center justify-content-center">
                                 <img src="~/Files/@att.FullFileName" alt="@att.FileName">
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                             </div>
                         </div>
                     </div>
@@ -98,16 +98,16 @@
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
+            <span class="visually-hidden">@Localizer["Previous"]</span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
+            <span class="visually-hidden">@Localizer["Next"]</span>
         </button>
     </div>
 
     <div class="text-center">
-        Rating: @Model.Post.Rating.ToString("n2") (@Model.Post.NoOfRates.ToString())
+        @Localizer["Rating:"] @Model.Post.Rating.ToString("n2") (@Model.Post.NoOfRates.ToString())
     </div>
 
     <hr />
@@ -116,14 +116,14 @@
         <form asp-action="AddAttachment" asp-route-id="@Model.Post.ID" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label class="control-label">Add Photo:</label>
+                <label class="control-label">@Localizer["Add Photo"]:</label>
                 <div class="custom-file">
                     <input asp-for="Files" placeholder="" multiple class="form-control custom-file-input" accept="image/png, image/gif, image/jpeg" />
-                    <label class="custom-file-label">Chose files...</label>
+                    <label class="custom-file-label">@Localizer["Chose files..."]</label>
                 </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Add Chosen Files" class="btn btn-primary" />
+                <input type="submit" value="@Localizer["Add Chosen Files"]" class="btn btn-primary" />
             </div>
         </form>
     </div>

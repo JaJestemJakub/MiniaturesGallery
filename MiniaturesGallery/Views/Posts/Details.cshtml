@@ -5,44 +5,49 @@
 @{
     ViewData["Title"] = "Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    
+
 }
 @functions{
     private async Task PresentCommentsRecursively(ICollection<Comment> comments)
     {
-        @foreach (var comm in comments)
-        {
-            <div class="card border">
-                <div class="card-header"><h3>@if(comm.User != null){<p>@comm.User.UserName</p>} else{<p>Guest</p>}</h3></div>
+    @foreach (var comm in comments)
+    {
+        <div class="card border">
+            <div class="card-header"><h3>@if(comm.User != null){<p>@comm.User.UserName</p>
+                    } else{
+                        <p>@Localizer["Guest"]</p>}</h3></div>
                 <div class="card-body">
                     <p class="card-text">@comm.Body</p>
                 </div>             
             </div>
-            <div class="">
-                @comm.CrateDate [<a data-bs-toggle="collapse" href="#collapseAddComment_@comm.ID">Reply</a>] 
-                @if(comm.Comments != null){<div style="display: inline;">[<a data-bs-toggle="collapse" href="#collapseShowCommentsOf_@comm.ID">Show Replies (@comm.Comments.Count())</a>]</div>}
-            </div>
-            <div class="col-md-4 ms-5 m-2 collapse" id="collapseAddComment_@comm.ID">
-                <form asp-action="Create" asp-controller="Comments">
-                    <input hidden name="@(nameof(Comment.PostID))" value="@comm.PostID" />
-                    <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
-                    <input hidden name="@(nameof(Comment.CommentID))" value="@comm.ID" />
-                    <div class="">
-                        <label class="control-label">Add Comment:</label>
-                        <input name="@(nameof(Comment.Body))" class="form-control" />
-                    </div>
-                    <div class="d-flex justify-content-center mt-2">
-                        <input type="submit" value="Create" class="btn btn-primary" />
-                    </div>
-                </form>
-            </div>
-            if (comm.Comments != null)
-            {
-                <div class="collapse ms-5" id="collapseShowCommentsOf_@comm.ID">
-                    @{PresentCommentsRecursively(comm.Comments);}
-                </div>
+        <div class="">
+            @comm.CrateDate [<a data-bs-toggle="collapse" href="#collapseAddComment_@comm.ID">@Localizer["Reply"]</a>] 
+            @if(comm.Comments != null){<div style="display: inline;">[<a data-bs-toggle="collapse" href="#collapseShowCommentsOf_@comm.ID">@Localizer["Show Replies"] (@comm.Comments.Count())</a>]</div>
             }
+        </div>
+        <div class="col-md-4 ms-5 m-2 collapse" id="collapseAddComment_@comm.ID">
+            <form asp-action="Create" asp-controller="Comments">
+                <input hidden name="@(nameof(Comment.PostID))" value="@comm.PostID" />
+                <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                <input hidden name="@(nameof(Comment.CommentID))" value="@comm.ID" />
+                <div class="">
+                    <label class="control-label">@Localizer["Add Comment:"]</label>
+                    <input name="@(nameof(Comment.Body))" class="form-control" />
+                </div>
+                <div class="d-flex justify-content-center mt-2">
+                    <input type="submit" value="@Localizer["Create"]" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+        if (comm.Comments != null)
+        {
+            <div class="collapse ms-5" id="collapseShowCommentsOf_@comm.ID">
+                @{
+                    PresentCommentsRecursively(comm.Comments);
+                }
+            </div>
         }
+    }
     }
 }
 
@@ -52,11 +57,11 @@
         @if (User.GetLoggedInUserId<string>() == Model.UserID)
         {
             <h4 style="display: inline;">
-                [<a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a>]
+                [<a asp-action="Edit" asp-route-id="@Model?.ID">@Localizer["Edit"]</a>]
             </h4>       
             <h4 style="display: inline;">
-                [<a asp-action="Delete" asp-route-id="@Model?.ID" class="text-danger">Delete</a>]
-            </h4>    
+                [<a asp-action="Delete" asp-route-id="@Model?.ID" class="text-danger">@Localizer["Delete"]</a>]
+            </h4>
         }
     </div>
     <hr />
@@ -79,13 +84,13 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">@att.FileName</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                                 </div>
                                 <div class="modal-body d-flex align-items-center justify-content-center">
                                     <img src="~/Files/@att.FullFileName" alt="@att.FileName">
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                                 </div>
                             </div>
                         </div>
@@ -114,11 +119,11 @@
             </div>
             <button class="carousel-control-prev text-white" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
+                <span class="visually-hidden">@Localizer["Previous"]</span>
             </button>
             <button class="carousel-control-next text-white" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
+                <span class="visually-hidden">@Localizer["Next"]</span>
             </button>
         </div>
 
@@ -151,7 +156,7 @@
         }
         <form asp-action="@action" asp-controller="Rates" method="post" asp-route-id="@(Model.Rates.Any() ? Model.Rates.First().ID : 0)">
             <div class="text-center">
-                Rating: @Model.Rating.ToString("n2") (@Model.NoOfRates.ToString())
+                @Localizer["Rating"]: @Model.Rating.ToString("n2") (@Model.NoOfRates.ToString())
             </div>
             <div class="rating justify-content-center">
                 @if (Model.Rates.Any())
@@ -172,7 +177,7 @@
                 <label for="1">☆</label>
             </div>
             <div class="text-center mb-2">
-                <input type="submit" value="Submit" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton" />
+                <input type="submit" value="@Localizer["Submit"]" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton" />
             </div>
         </form>
 
@@ -183,19 +188,19 @@
 
         <hr />
         <div class="col-md-12">
-            <h5>Comments:</h5>
-            [<a data-bs-toggle="collapse" href="#collapseAddComment">Add Comment</a>]
+            <h5>@Localizer["Comments"]:</h5>
+            [<a data-bs-toggle="collapse" href="#collapseAddComment">@Localizer["Add Comment"]</a>]
             <div class="col-md-4 m-2 collapse" id="collapseAddComment">
                 <form asp-action="Create" asp-controller="Comments">
                     <input hidden name="@(nameof(Comment.PostID))" value="@Model.ID" />
                     <input hidden name="@(nameof(Comment.UserID))" value="@(User.GetLoggedInUserId<string>())" />
                     <input hidden name="@(nameof(Comment.CommentID))" value="" />
                     <div class="">
-                        <label class="control-label">Add Comment:</label>
+                        <label class="control-label">@Localizer["Add Comment"]:</label>
                         <input name="@(nameof(Comment.Body))" class="form-control" />
                     </div>
                     <div class="d-flex justify-content-center mt-2">
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                        <input type="submit" value="@Localizer["Create"]" class="btn btn-primary" />
                     </div>
                 </form>
             </div>

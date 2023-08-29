@@ -1,4 +1,5 @@
 ﻿using MiniaturesGallery.Models.Abstracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace MiniaturesGallery.Models
 {
@@ -8,6 +9,7 @@ namespace MiniaturesGallery.Models
         public Rate() : base(OwnedAbs.Anynomus) { }
 
         public int ID { get; set; }
+        [Display(Name = "Rating")]
         public int Rating { get; set; }
         public int PostID { get; set; }
     }
