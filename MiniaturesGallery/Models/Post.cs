@@ -12,9 +12,11 @@ namespace MiniaturesGallery.Models
         public Post() : base(OwnedAbs.Anynomus) { }
 
         public int ID { get; set; }
+        [Display(Name = "Topic")]
         public string? Topic { get; set; }
         [Display(Name = "Description")]
         public string? Text { get; set; }
+        [Display(Name = "Rating")]
         public float Rating { get; set; }
         [Display(Name = "Crate Date")]
         public DateTime CrateDate { get; set; }

@@ -7,10 +7,10 @@
     string orderBy;
 }
 
-<h1>Posts</h1>
+<h1>@Localizer["Posts"]</h1>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">@Localizer["Create New"]</a>
 </p>
 
 <form method="get">
@@ -41,22 +41,22 @@
     </div>
     <div class="row">
         <div class="col-auto">
-            <label class="control-label mt-2 mr-2">Search:</label>
+            <label class="control-label mt-2 mr-2">@Localizer["Search"]:</label>
         </div>
         <div class="col-auto">
             <div class="input-group">
                 <input type="text" name="SearchString" class="form-control" value="@ViewBag.SearchString">
                 <select name="OrderByFilter" class="form-select" value="@ViewBag.OrderByFilter">
-                    <option value="">Order by</option>
-                    <option value="@(nameof(Post.CrateDate)+"_desc")">Date Descending</option>
-                    <option value="@(nameof(Post.CrateDate))">Date Ascending</option>
-                    <option value="@(nameof(Post.Rating)+"_desc")">Rates Descending</option>
-                    <option value="@(nameof(Post.Rating))">Rates Ascending</option>
+                    <option value="">@Localizer["Order by"]</option>
+                    <option value="@(nameof(Post.CrateDate)+"_desc")">@Localizer["Date Descending"]</option>
+                    <option value="@(nameof(Post.CrateDate))">@Localizer["Date Ascending"]</option>
+                    <option value="@(nameof(Post.Rating)+"_desc")">@Localizer["Rates Descending"]</option>
+                    <option value="@(nameof(Post.Rating))">@Localizer["Rates Ascending"]</option>
                 </select>
             </div>
         </div>
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary" asp-action="Index">Show</button>
+            <button type="submit" class="btn btn-primary" asp-action="Index">@Localizer["Show"]</button>
         </div>
     </div>
 </form>
@@ -147,9 +147,9 @@
             </td>
             <td>
                 <div class="btn-group">
-                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-primary btn-sm">Edit</a>
-                    <a asp-action="Details" asp-route-id="@item.ID" class="btn btn-primary btn-sm">Details</a>
-                    <a asp-action="Delete" asp-route-id="@item.ID" class="btn btn-danger btn-sm">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-primary btn-sm">@Localizer["Edit"]</a>
+                    <a asp-action="Details" asp-route-id="@item.ID" class="btn btn-primary btn-sm">@Localizer["Details"]</a>
+                    <a asp-action="Delete" asp-route-id="@item.ID" class="btn btn-danger btn-sm">@Localizer["Delete"]</a>
                 </div>
             </td>
         </tr>

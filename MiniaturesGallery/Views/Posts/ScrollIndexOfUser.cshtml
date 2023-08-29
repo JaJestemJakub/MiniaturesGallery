@@ -8,7 +8,7 @@
 
 <div class="row d-flex justify-content-center">
     <div class="col-6 mb-4 text-center">
-        <h3>User: @ViewBag.UserName</h3>
+        <h3>@Localizer["User"]: @ViewBag.UserName</h3>
     </div>
 </div>
 
@@ -34,13 +34,13 @@
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title">@att.FileName</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                                     </div>
                                     <div class="modal-body d-flex align-items-center justify-content-center">
                                         <img src="~/Files/@att.FullFileName" alt="@att.FileName">
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                                     </div>
                                 </div>
                             </div>
@@ -69,11 +69,11 @@
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
+                    <span class="visually-hidden">@Localizer["Previous"]</span>
                 </button>
                 <button class="carousel-control-next" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
+                    <span class="visually-hidden">@Localizer["Next"]</span>
                 </button>
             </div>
         </div>
@@ -87,15 +87,15 @@
                 @if (User.GetLoggedInUserId<string>() == post.UserID)
                 {
                     <h4 style="display: inline;">
-                        [<a asp-action="Edit" asp-route-id="@post.ID">Edit</a>]
+                        [<a asp-action="Edit" asp-route-id="@post.ID">@Localizer["Edit"]</a>]
                     </h4>
                     <h4 style="display: inline;">
-                        [<a asp-action="Delete" asp-route-id="@post.ID" class="text-danger">Delete</a>]
+                        [<a asp-action="Delete" asp-route-id="@post.ID" class="text-danger">@Localizer["Delete"]</a>]
                     </h4>
                 }
             </div>
             <div class="text-center align-items-center">
-                <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-info">(See Details)</a></small>
+                <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-info">(@Localizer["See Details"])</a></small>
             </div>
             <h4 style="white-space: pre-line">@post.Text</h4>
             @{
@@ -127,7 +127,7 @@
             }
             <form asp-action="@action" asp-controller="Rates" method="post" asp-route-id="@(post.Rates.Any() ? post.Rates.First().ID : 0)">
                 <div class="text-center">
-                    Rating: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
+                    @Localizer["Rating"]: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
                 </div>
                 <div class="rating justify-content-center">
                     @if (post.Rates.Any())
@@ -148,11 +148,11 @@
                     <label for="@(post.ID)_1">☆</label>
                 </div>
                 <div class="text-center mb-2">
-                    <input type="submit" value="Submit" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton@(post.ID)" />
+                    <input type="submit" value="@Localizer["Submit"]" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton@(post.ID)" />
                 </div>
             </form>
             <div class="text-center">
-                Comments: @post.NoOfComments.ToString()
+                @Localizer["Comments"]: @post.NoOfComments.ToString()
             </div>
         </div>
     </div>

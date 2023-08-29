@@ -6,16 +6,16 @@
 }
 
 <h1 style="display: inline;">
-    Delete 
+    @Localizer["Delete"]
 </h1>
 <h4 style="display: inline;">
-    [<a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a>]
+    [<a asp-action="Edit" asp-route-id="@Model?.ID">@Localizer["Edit"]</a>]
 </h4>
 <h4 style="display: inline;">
-    [<a asp-action="Details" asp-route-id="@Model?.ID" class="text-info">Details</a>]
+    [<a asp-action="Details" asp-route-id="@Model?.ID" class="text-info">@Localizer["Details"]</a>]
 </h4>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>@Localizer["Are you sure you want to delete this?"]</h3>
 <div>
     <hr />
     <dl class="row">
@@ -46,13 +46,13 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">@att.FileName</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
                         </div>
                         <div class="modal-body d-flex align-items-center justify-content-center">
                             <img src="~/Files/@att.FullFileName" alt="@att.FileName">
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
                         </div>
                     </div>
                 </div>
@@ -62,6 +62,6 @@
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="ID" />
-        <input type="submit" value="Delete" class="btn btn-danger" />
+        <input type="submit" value="@Localizer["Delete"]" class="btn btn-danger" />
     </form>
 </div>
