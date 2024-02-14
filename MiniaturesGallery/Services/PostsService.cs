@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
+using MiniaturesGallery.Models.Abstracts;
 
 namespace MiniaturesGallery.Services
 {
@@ -22,11 +23,13 @@ namespace MiniaturesGallery.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IAttachmentsService _attachmentsService;
+        private readonly ILogger<AttachmentsService> _logger;
 
-        public PostsService(ApplicationDbContext context, IAttachmentsService attachmentsService)
+        public PostsService(ApplicationDbContext context, IAttachmentsService attachmentsService, ILogger<AttachmentsService> logger)
         {
             _attachmentsService = attachmentsService;
             _context = context;
+            _logger = logger;
         }
 
         public IQueryable<Post> GetOfUser(string filtrUserID, string UserID)
@@ -188,6 +191,8 @@ namespace MiniaturesGallery.Services
                 .Include(a => a.Coments)
                 .Include(a => a.Rates)
                 .FirstOrDefaultAsync(m => m.ID == id);
+
+            _logger.LogInformation($"Post ID: {id} Of: {post.UserID} DELETE invoked");
 
             await _attachmentsService.DeleteAllAsync(post.ID);
             _context.Posts.Remove(post);

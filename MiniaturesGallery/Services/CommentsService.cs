@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Models;
 
@@ -17,10 +18,13 @@ namespace MiniaturesGallery.Services
     public class CommentsService : ICommentsService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AttachmentsService> _logger;
 
-        public CommentsService(ApplicationDbContext context)
+        public CommentsService(ApplicationDbContext context, ILogger<AttachmentsService> logger)
         {
             _context = context;
+            _logger = logger;
+
         }
         public async Task<int> CreateAsync(Comment comment)
         {
@@ -33,6 +37,9 @@ namespace MiniaturesGallery.Services
         public async Task DeleteAsync(int id)
         {
             var comment = await _context.Comments.FirstOrDefaultAsync(m => m.ID == id);
+
+            _logger.LogInformation($"Comment ID: {id} PostID: {comment.PostID} CommentID: {comment.CommentID} Of: {comment.UserID} DELETE invoked");
+
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
         }

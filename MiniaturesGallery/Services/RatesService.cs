@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Models;
 
@@ -16,10 +17,13 @@ namespace MiniaturesGallery.Services
     public class RatesService : IRatesService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AttachmentsService> _logger;
 
-        public RatesService(ApplicationDbContext context)
+        public RatesService(ApplicationDbContext context, ILogger<AttachmentsService> logger)
         {
             _context = context;
+            _logger = logger;
+
         }
 
         public async Task<int> CreateAsync(Rate rate)
@@ -35,6 +39,8 @@ namespace MiniaturesGallery.Services
         public async Task DeleteAsync(int id)
         {
             var rate = await _context.Rates.FirstOrDefaultAsync(m => m.ID == id);
+
+            _logger.LogInformation($"Rate ID: {rate.ID} PostID: {rate.PostID} Of: {rate.UserID} DELETE invoked");
 
             _context.Rates.Remove(rate);
             await _context.SaveChangesAsync();

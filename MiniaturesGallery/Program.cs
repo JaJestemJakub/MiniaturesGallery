@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MiniaturesGallery;
 using MiniaturesGallery.Autorization;
 using MiniaturesGallery.Data;
+using MiniaturesGallery.Middleware;
 using MiniaturesGallery.Services;
+using NLog.Web;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,9 +35,14 @@ builder.Services.AddScoped<IPostService, PostsService>();
 builder.Services.AddScoped<IAttachmentsService, AttachmentsService>();
 builder.Services.AddScoped<IRatesService, RatesService>();
 builder.Services.AddScoped<ICommentsService, CommentsService>();
+builder.Services.AddScoped<RequestTimeMiddleware>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
 builder.Services.AddMvc()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization(options => {
@@ -82,6 +88,7 @@ else
     app.UseHsts();
 }
 
+app.UseMiddleware<RequestTimeMiddleware>();
 app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI(x => x.SwaggerEndpoint("/swagger/v1/swagger.json", "MiniaturesGallery"));

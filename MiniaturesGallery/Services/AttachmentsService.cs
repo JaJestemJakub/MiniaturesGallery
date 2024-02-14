@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.Models;
@@ -17,11 +18,13 @@ namespace MiniaturesGallery.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly ILogger<AttachmentsService> _logger;
 
-        public AttachmentsService(ApplicationDbContext context, IWebHostEnvironment hostingEnvironment)
+        public AttachmentsService(ApplicationDbContext context, IWebHostEnvironment hostingEnvironment, ILogger<AttachmentsService> logger)
         {
             _context = context;
             _hostingEnvironment = hostingEnvironment;
+            _logger = logger;
         }
 
         public async Task CreateAsync(List<IFormFile>? files, int postID, string UserID)
@@ -51,7 +54,9 @@ namespace MiniaturesGallery.Services
         public async Task DeleteAsync(int id)
         {
             Attachment att = await _context.Attachments
-                .FirstAsync(x => x.ID == id);
+            .FirstAsync(x => x.ID == id);
+
+            _logger.LogInformation($"Attachment ID: {id} FileName: {att.FileName} PostID: {att.PostID} Of: {att.UserID} DELETE invoked");
 
             _context.Attachments.Remove(att);
 
@@ -73,6 +78,8 @@ namespace MiniaturesGallery.Services
             {
                 foreach (var att in post.Attachments)
                 {
+                    _logger.LogInformation($"Attachment ID: {att.ID} FileName: {att.FileName} PostID: {att.PostID} Of: {att.UserID} DELETE invoked");
+
                     _context.Attachments.Remove(att);
 
                     string FilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.FullFileName);
