@@ -8,7 +8,7 @@ namespace MiniaturesGallery.Services
     {
         Task<List<Rate>> GetAsync();
         Task<Rate> GetAsync(int id);
-        Task CreateAsync(Rate rate);
+        Task<int> CreateAsync(Rate rate);
         Task UpdateAsync(Rate rate);
         Task DeleteAsync(int id);
         bool Exists(int id);
@@ -22,12 +22,14 @@ namespace MiniaturesGallery.Services
             _context = context;
         }
 
-        public async Task CreateAsync(Rate rate)
+        public async Task<int> CreateAsync(Rate rate)
         {
             _context.Add(rate);
             await _context.SaveChangesAsync();
 
             ActualizeRating(rate.PostID);
+
+            return rate.ID;
         }
 
         public async Task DeleteAsync(int id)

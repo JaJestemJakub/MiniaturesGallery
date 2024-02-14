@@ -14,7 +14,5 @@ namespace MiniaturesGallery.Models
         [Display(Name = "Full File Name")]
         public string? FullFileName { get; set; }
         public int PostID { get; set; }
-
-        public Post? Post { get; set; }
     }
 }

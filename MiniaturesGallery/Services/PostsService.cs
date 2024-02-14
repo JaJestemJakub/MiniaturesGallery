@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
@@ -7,9 +8,9 @@ namespace MiniaturesGallery.Services
 {
     public interface IPostService
     {
-        IQueryable<Post> Get();
-        IQueryable<Post> GetSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID);
-        IQueryable<Post> GetOfUser(string filtrUserID, int? pageNumber, string UserID);
+        IQueryable<Post> GetAll();
+        IQueryable<Post> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID);
+        IQueryable<Post> GetOfUser(string filtrUserID, string UserID);
         Post Get(int id, string UserID);
         Task<int> CreateAsync(Post post, string UserID);
         Task UpdateAsync(Post post);
@@ -28,12 +29,7 @@ namespace MiniaturesGallery.Services
             _context = context;
         }
 
-        public IQueryable<Post> Get()
-        {
-            return _context.Posts.AsQueryable();
-        }
-
-        public IQueryable<Post> GetOfUser(string filtrUserID, int? pageNumber, string UserID)
+        public IQueryable<Post> GetOfUser(string filtrUserID, string UserID)
         {
             IQueryable<Post> posts;
 
@@ -59,7 +55,27 @@ namespace MiniaturesGallery.Services
             return posts;
         }
 
-        public IQueryable<Post> GetSortedBy(string searchString, string orderByFilter, DateTime dateFrom, DateTime dateTo, int? pageNumber, string UserID)
+        public IQueryable<Post> GetAll()
+        {
+            IQueryable<Post> posts;
+
+            posts = _context.Posts
+                    .Include(a => a.Attachments)
+                    .Include(a => a.User)
+                    .AsQueryable();
+
+            foreach (Post post in posts)
+            {
+                post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
+
+                post.Rates = new List<Rate>();
+                post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+            }
+
+            return posts;
+        }
+
+        public IQueryable<Post> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID)
         {
             IQueryable<Post> posts;
             if (String.IsNullOrEmpty(searchString) == false)
@@ -76,10 +92,10 @@ namespace MiniaturesGallery.Services
                     .Include(a => a.User)
                     .AsQueryable();
 
-            if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
-            {
-                posts = posts.Where(x => x.CrateDate >= dateFrom && x.CrateDate < dateTo.AddDays(1));
-            }
+            DateTime dateFromTmp = ((dateFrom == DateTime.MinValue || dateFrom is null) ? DateTime.Today.AddMonths(-1) : (DateTime)dateFrom);
+            DateTime dateToTmp = ((dateTo == DateTime.MinValue || dateTo is null) ? DateTime.Today : (DateTime)dateTo);
+            
+            posts = posts.Where(x => x.CrateDate >= dateFromTmp && x.CrateDate < dateToTmp.AddDays(1));
 
             if (String.IsNullOrEmpty(orderByFilter) == false)
             {

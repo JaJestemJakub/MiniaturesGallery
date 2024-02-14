@@ -8,7 +8,7 @@ namespace MiniaturesGallery.Services
     {
         Task<List<Comment>> GetAsync();
         Task<Comment> GetAsync(int id);
-        Task CreateAsync(Comment comment);
+        Task<int> CreateAsync(Comment comment);
         Task UpdateAsync(Comment comment);
         Task DeleteAsync(int id);
         bool Exists(int id);
@@ -22,11 +22,12 @@ namespace MiniaturesGallery.Services
         {
             _context = context;
         }
-        public async Task CreateAsync(Comment comment)
+        public async Task<int> CreateAsync(Comment comment)
         {
             comment.CrateDate = DateTime.Now;
             _context.Add(comment);
             await _context.SaveChangesAsync();
+            return comment.ID;
         }
 
         public async Task DeleteAsync(int id)

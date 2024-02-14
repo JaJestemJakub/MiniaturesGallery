@@ -51,7 +51,6 @@ namespace MiniaturesGallery.Services
         public async Task DeleteAsync(int id)
         {
             Attachment att = await _context.Attachments
-                .Include(a => a.Post)
                 .FirstAsync(x => x.ID == id);
 
             _context.Attachments.Remove(att);
@@ -89,7 +88,6 @@ namespace MiniaturesGallery.Services
         public async Task<Attachment> GetAsync(int id)
         {
             Attachment att = await _context.Attachments
-                .Include(a => a.Post)
                 .FirstAsync(x => x.ID == id);
 
             return att;

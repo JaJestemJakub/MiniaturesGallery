@@ -42,7 +42,7 @@ namespace MiniaturesGallery.Controllers
                 dateTo = DateTime.Today;
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
-            var tmpList = _postService.GetSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>());
+            var tmpList = _postService.Get(searchString, orderByFilter, dateFrom, dateTo, User.GetLoggedInUserId<string>());
             var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
             PgList.Action = nameof(PostsController.Index);
 
@@ -62,7 +62,7 @@ namespace MiniaturesGallery.Controllers
                 dateTo = DateTime.Today;
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
-            var tmpList = _postService.GetSortedBy(searchString, orderByFilter, dateFrom, dateTo, pageNumber, User.GetLoggedInUserId<string>());
+            var tmpList = _postService.Get(searchString, orderByFilter, dateFrom, dateTo, User.GetLoggedInUserId<string>());
             var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
             PgList.Action = nameof(PostsController.Index);
 
@@ -74,7 +74,7 @@ namespace MiniaturesGallery.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ScrollIndexOfUser([FromQuery] string filtrUserID, [FromQuery] int? pageNumber)
         {
-            var tmpList = _postService.GetOfUser(filtrUserID, pageNumber, User.GetLoggedInUserId<string>());
+            var tmpList = _postService.GetOfUser(filtrUserID, User.GetLoggedInUserId<string>());
             var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
             PgList.Action = nameof(PostsController.ScrollIndexOfUser);
             PgList.UserID = filtrUserID;

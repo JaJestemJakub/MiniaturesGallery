@@ -19,7 +19,7 @@ namespace MiniaturesGallery.Controllers
         private readonly IAuthorizationService _authorizationService;
         private const int _pageSize = 10;
 
-        public PostsAngularController(IPostService postService, IAttachmentsService attachmentsService, IAuthorizationService authorizationService, UserManager<IdentityUser> userManager)
+        public PostsAngularController(IPostService postService, IAuthorizationService authorizationService)
         {
             _postService = postService;
             _authorizationService = authorizationService;
@@ -27,7 +27,7 @@ namespace MiniaturesGallery.Controllers
 
         private async Task<JsonResult> GetPostsInJsonAsync()
         {
-            List<Post> tmpList = await _postService.Get().ToListAsync();
+            List<Post> tmpList = await _postService.GetAll().ToListAsync();
             string json_data = JsonConvert.SerializeObject(
                 tmpList,
                 Formatting.Indented,
