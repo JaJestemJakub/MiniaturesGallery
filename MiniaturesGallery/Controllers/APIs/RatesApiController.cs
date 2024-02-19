@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MiniaturesGallery.Exceptions;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
@@ -24,10 +25,7 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult<Rate>> Get([FromRoute] int id)
         {
             Rate rate = await _ratesService.GetAsync(id);
-            if (rate == null)
-            {
-                return NotFound();
-            }
+            if (rate == null) { throw new NotFoundException("Rate not found"); }
             return Ok(rate);
         }
 
@@ -43,16 +41,10 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult> Delete([FromRoute] int id)
         {
             var rate = await _ratesService.GetAsync(id);
-            if (rate == null)
-            {
-                return NotFound();
-            }
+            if (rate == null) { throw new NotFoundException("Rate not found"); }
 
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Delete);
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
+            if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
             await _ratesService.DeleteAsync(id);
             return NoContent();
@@ -62,16 +54,10 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult> Put([FromForm][Bind("ID,Rating")] Rate rate)
         {
             var rateFromDB = await _ratesService.GetAsync(rate.ID);
-            if (rateFromDB == null)
-            {
-                return NotFound();
-            }
+            if (rateFromDB == null) { throw new NotFoundException("Rate not found"); }
 
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, rateFromDB, Operations.Update);
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
+            if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
             await _ratesService.UpdateAsync(rate);
             return Ok();

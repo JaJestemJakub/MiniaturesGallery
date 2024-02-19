@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MiniaturesGallery.Exceptions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 using MiniaturesGallery.Services;
@@ -22,16 +23,8 @@ namespace MiniaturesGallery.Controllers.APIs
         [HttpGet("{id}")]
         public async Task<ActionResult<Comment>> GetAsync([FromRoute] int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var comment = await _commentsService.GetAsync((int)id);
-            if (comment == null)
-            {
-                return NotFound();
-            }
+            if (comment == null) { throw new NotFoundException("Comment not found"); }
             return Ok(comment);
         }
 
@@ -47,15 +40,10 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult> Delete([FromRoute][Bind("ID")] int id)
         {
             var comment = await _commentsService.GetAsync(id);
-            if (comment == null)
-            {
-                return NotFound();
-            }
+            if (comment == null) { throw new NotFoundException("Comment not found"); }
+
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Delete);
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
+            if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
             await _commentsService.DeleteAsync(id);
             return NoContent();
@@ -65,15 +53,10 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult> Put([FromForm][Bind("ID,Body")] Comment comment)
         {
             Comment commentFromDB = await _commentsService.GetAsync(comment.ID);
-            if (commentFromDB == null)
-            {
-                return NotFound();
-            }
+            if (commentFromDB == null) { throw new NotFoundException("Comment not found"); }
+
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Update);
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
+            if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
             await _commentsService.UpdateAsync(comment);
             return Ok();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MiniaturesGallery.Exceptions;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
@@ -25,10 +26,7 @@ namespace MiniaturesGallery.Controllers.APIs
         public ActionResult<Post> Get([FromRoute] int id)
         {
             var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
-            if (post == null)
-            {
-                return NotFound();
-            }
+            if (post == null) { throw new NotFoundException("Post not found"); }
             return Ok(post);
         }
 
@@ -52,14 +50,11 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult> Delete([FromRoute][Bind("ID")] int id)
         {
             var post = _postService.Get((int)id, User.GetLoggedInUserId<string>());
-            if (post != null)
-            {
-                var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
-                if (!isAuthorized.Succeeded)
-                {
-                    return Forbid();
-                }
-            }
+            if (post == null) { throw new NotFoundException("Post not found"); }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
+            if (!isAuthorized.Succeeded){ throw new AccessDeniedException("Access Denied"); }
+
             await _postService.DeleteAsync(id);
             return NoContent();
         }
@@ -68,16 +63,10 @@ namespace MiniaturesGallery.Controllers.APIs
         public async Task<ActionResult> Put([FromBody][Bind("ID,Topic,Text")] Post post)
         {
             var postFromDB = _postService.Get((int)post.ID, User.GetLoggedInUserId<string>());
-            if (postFromDB == null)
-            {
-                return NotFound();
-            }
+            if (postFromDB == null) { throw new NotFoundException("Post not found"); }
 
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, postFromDB, Operations.Update);
-            if (!isAuthorized.Succeeded)
-            {
-                return Forbid();
-            }
+            if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
             await _postService.UpdateAsync(post);
             return Ok();

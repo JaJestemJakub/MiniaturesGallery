@@ -49,8 +49,6 @@ namespace MiniaturesGallery.Controllers
         }
 
         // POST: Comments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
@@ -87,8 +85,6 @@ namespace MiniaturesGallery.Controllers
         }
 
         // POST: Comments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromRoute] int id, [FromForm][Bind("ID,Body")] Comment comment)
