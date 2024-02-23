@@ -1,15 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 using MiniaturesGallery.Services;
-using MiniaturesGallery.ViewModels;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace MiniaturesGallery.Controllers
 {
@@ -65,7 +61,7 @@ namespace MiniaturesGallery.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> Add([FromBody][Bind("ID,Topic,Text")] Post post)
         {
-            await _postService.CreateAsync(post, User.GetLoggedInUserId<string>());
+            _postService.Create(post, User.GetLoggedInUserId<string>());
 
             return await GetPostsInJsonAsync();
         }
@@ -90,7 +86,7 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    await _postService.UpdateAsync(post);
+                    _postService.Update(post);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -121,7 +117,7 @@ namespace MiniaturesGallery.Controllers
                     return Forbid();
                 }
 
-                await _postService.DeleteAsync(postFromDB.ID);
+                _postService.Delete(postFromDB.ID);
             }
 
             return await GetPostsInJsonAsync();

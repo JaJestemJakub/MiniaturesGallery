@@ -3,24 +3,27 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniaturesGallery.Data;
 
 #nullable disable
 
-namespace MiniaturesGallery.Data.Migrations
+namespace MiniaturesGallery.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240222105303_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.15")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -55,7 +58,7 @@ namespace MiniaturesGallery.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -145,7 +148,7 @@ namespace MiniaturesGallery.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -230,7 +233,7 @@ namespace MiniaturesGallery.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
@@ -249,7 +252,7 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("Attachments", (string)null);
+                    b.ToTable("Attachments");
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Comment", b =>
@@ -258,7 +261,7 @@ namespace MiniaturesGallery.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
@@ -282,22 +285,24 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("MiniaturesGallery.Models.Post", b =>
+            modelBuilder.Entity("MiniaturesGallery.Models.PostAbs", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<DateTime>("CrateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<float>("Rating")
-                        .HasColumnType("real");
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
@@ -307,11 +312,17 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.Property<string>("UserID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ID");
 
-                    b.ToTable("Posts", (string)null);
+                    b.HasIndex("UserID");
+
+                    b.ToTable("PostsAbs");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("PostAbs");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Rate", b =>
@@ -320,7 +331,7 @@ namespace MiniaturesGallery.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<int>("PostID")
                         .HasColumnType("int");
@@ -336,7 +347,27 @@ namespace MiniaturesGallery.Data.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("Rates", (string)null);
+                    b.ToTable("Rates");
+                });
+
+            modelBuilder.Entity("MiniaturesGallery.Models.Announcement", b =>
+                {
+                    b.HasBaseType("MiniaturesGallery.Models.PostAbs");
+
+                    b.Property<string>("PrivateNote")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("Announcement");
+                });
+
+            modelBuilder.Entity("MiniaturesGallery.Models.Post", b =>
+                {
+                    b.HasBaseType("MiniaturesGallery.Models.PostAbs");
+
+                    b.Property<float>("Rating")
+                        .HasColumnType("real");
+
+                    b.HasDiscriminator().HasValue("Post");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -392,13 +423,11 @@ namespace MiniaturesGallery.Data.Migrations
 
             modelBuilder.Entity("MiniaturesGallery.Models.Attachment", b =>
                 {
-                    b.HasOne("MiniaturesGallery.Models.Post", "Post")
+                    b.HasOne("MiniaturesGallery.Models.Post", null)
                         .WithMany("Attachments")
                         .HasForeignKey("PostID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Comment", b =>
@@ -412,6 +441,17 @@ namespace MiniaturesGallery.Data.Migrations
                         .HasForeignKey("PostID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MiniaturesGallery.Models.PostAbs", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiniaturesGallery.Models.Rate", b =>

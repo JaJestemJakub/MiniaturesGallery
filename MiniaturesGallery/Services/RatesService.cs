@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Models;
 
@@ -7,11 +6,11 @@ namespace MiniaturesGallery.Services
 {
     public interface IRatesService
     {
-        Task<List<Rate>> GetAsync();
-        Task<Rate> GetAsync(int id);
-        Task<int> CreateAsync(Rate rate);
-        Task UpdateAsync(Rate rate);
-        Task DeleteAsync(int id);
+        List<Rate> Get();
+        Rate Get(int id);
+        int Create(Rate rate);
+        void Update(Rate rate);
+        void Delete(int id);
         bool Exists(int id);
     }
     public class RatesService : IRatesService
@@ -26,24 +25,24 @@ namespace MiniaturesGallery.Services
 
         }
 
-        public async Task<int> CreateAsync(Rate rate)
+        public int Create(Rate rate)
         {
             _context.Add(rate);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             ActualizeRating(rate.PostID);
 
             return rate.ID;
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(int id)
         {
-            var rate = await _context.Rates.FirstOrDefaultAsync(m => m.ID == id);
+            var rate = _context.Rates.FirstOrDefault(m => m.ID == id);
 
             _logger.LogInformation($"Rate ID: {rate.ID} PostID: {rate.PostID} Of: {rate.UserID} DELETE invoked");
 
             _context.Rates.Remove(rate);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             ActualizeRating(rate.PostID);
         }
@@ -53,23 +52,23 @@ namespace MiniaturesGallery.Services
             return _context.Rates.Any(e => e.ID == id);
         }
 
-        public async Task<List<Rate>> GetAsync()
+        public List<Rate> Get()
         {
-            return await _context.Rates.ToListAsync();
+            return _context.Rates.ToList();
         }
 
-        public async Task<Rate> GetAsync(int id)
+        public Rate Get(int id)
         {
-            return await _context.Rates.FirstOrDefaultAsync(m => m.ID == id);
+            return _context.Rates.FirstOrDefault(m => m.ID == id);
         }
 
-        public async Task UpdateAsync(Rate rate)
+        public void Update(Rate rate)
         {
-            var rateFromDB = await _context.Rates.FirstOrDefaultAsync(m => m.ID == rate.ID);
+            var rateFromDB =  _context.Rates.FirstOrDefault(m => m.ID == rate.ID);
 
             rateFromDB.Rating = rate.Rating;
             _context.Update(rateFromDB);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             ActualizeRating(rateFromDB.PostID);
         }
@@ -81,7 +80,7 @@ namespace MiniaturesGallery.Services
                 return false;
             }
 
-            Post post = _context.Posts
+            Post post = _context.PostsAbs.OfType<Post>()
                 .Include(a => a.Rates)
                 .First(x => x.ID == id);
             float newRating = 0;

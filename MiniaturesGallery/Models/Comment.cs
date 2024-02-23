@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MiniaturesGallery.Models.Abstracts;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MiniaturesGallery.Models
 {
@@ -18,6 +19,7 @@ namespace MiniaturesGallery.Models
         public int PostID { get; set; }
         public int? CommentID { get; set; } //aswer to
 
+        [NotMapped]
         public IdentityUser? User { get; set; }
         public ICollection<Comment>? Comments { get; set; }
     }

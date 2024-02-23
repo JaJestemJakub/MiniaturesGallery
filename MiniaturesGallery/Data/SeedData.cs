@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.Internal;
+using MiniaturesGallery.Models;
+using MiniaturesGallery.Services;
 
 namespace MiniaturesGallery.Data
 {
@@ -16,7 +19,87 @@ namespace MiniaturesGallery.Data
 
                 var adminID = await EnsureUser(serviceProvider, adminUserPw, "admin@admin.com");
                 await EnsureRole(serviceProvider, adminID, HelpClasses.Constants.ContactAdministratorsRole);
+                SeedDB(serviceProvider, adminID);
             }
+        }
+
+        private static async void SeedDB(IServiceProvider serviceProvider, string uid)
+        {
+            var postsService = serviceProvider.GetService<IPostService>();
+            var commentsService = serviceProvider.GetService<ICommentsService>();
+            var ratesService = serviceProvider.GetService<IRatesService>();
+            var attachmentsService = serviceProvider.GetService<IAttachmentsService>();
+            var hostingEnvironment = serviceProvider.GetService<IWebHostEnvironment>();
+
+            if(postsService.Any() == false)
+            {
+                //TODO: Add also annoucment
+                Post examplePost = new Post 
+                {
+                    Topic = "First Post",
+                    Text = "Example Post from admin account."
+                };
+
+                int postID = postsService.Create(examplePost, uid);
+
+                Comment comment = new Comment 
+                {
+                    Body = "Body of first Comment.",
+                    PostID = postID,
+                    UserID = uid
+                };
+                int commentID = commentsService.Create(comment);
+
+                Comment comment2 = new Comment
+                {
+                    Body = "Body of second Comment in response to first.",
+                    PostID = postID,
+                    UserID = uid,
+                    CommentID = commentID
+                };
+                commentsService.Create(comment2);
+
+                Rate rate = new Rate
+                {
+                    Rating = 5,
+                    PostID = postID,
+                    UserID = uid
+                };
+                ratesService.Create(rate);
+
+                string fileName1 = "default1.jpg";
+                string fileName2 = "default2.jpg";
+
+                string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", postID.ToString());
+                if (Directory.Exists(FolderPath) == false)
+                    Directory.CreateDirectory(FolderPath);
+                string FolderSlashFile1 = Path.Combine(postID.ToString(), fileName1);
+                string FilePath1 = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile1);
+                string FolderSlashFile2 = Path.Combine(postID.ToString(), fileName2);
+                string FilePath2 = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile2);
+
+                File.Copy(Path.Combine(hostingEnvironment.WebRootPath, fileName1), FilePath1);
+                File.Copy(Path.Combine(hostingEnvironment.WebRootPath, fileName2), FilePath2);
+
+                Attachment attachment1 = new Attachment
+                {
+                    PostID = postID,
+                    FileName = fileName1,
+                    FullFileName = FolderSlashFile1,
+                    UserID = uid
+                };
+                Attachment attachment2 = new Attachment
+                {
+                    PostID = postID,
+                    FileName = fileName2,
+                    FullFileName = FolderSlashFile2,
+                    UserID = uid
+                };
+
+                attachmentsService.Create(attachment1);
+                attachmentsService.Create(attachment2);
+            }
+
         }
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider, string userPw, string UserName)

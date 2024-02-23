@@ -26,7 +26,7 @@ namespace MiniaturesGallery.Controllers.APIs
         [HttpGet("{id}")]
         public ActionResult<Post> Get([FromRoute] int id)
         {
-            var post = _attachmentsService.GetAsync(id);
+            var post = _attachmentsService.Get(id);
             if (post == null) { throw new NotFoundException("Post not found"); }
             return Ok(post);
         }
@@ -40,7 +40,7 @@ namespace MiniaturesGallery.Controllers.APIs
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Create);
             if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
-            await _attachmentsService.CreateAsync(files, postID, User.GetLoggedInUserId<string>());
+            _attachmentsService.Create(files, postID, User.GetLoggedInUserId<string>());
 
             return Ok();
         }
@@ -48,13 +48,13 @@ namespace MiniaturesGallery.Controllers.APIs
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute][Bind("ID")] int id)
         {
-            Attachment att = await _attachmentsService.GetAsync(id);
+            Attachment att = _attachmentsService.Get(id);
             if (att == null) { throw new NotFoundException("Post not found"); }
 
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, att, Operations.Delete);
             if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
-            await _attachmentsService.DeleteAsync(id);
+            _attachmentsService.Delete(id);
             return NoContent();
         }
     }

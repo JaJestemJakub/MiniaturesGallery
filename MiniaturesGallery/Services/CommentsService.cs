@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Models;
 
@@ -7,11 +6,11 @@ namespace MiniaturesGallery.Services
 {
     public interface ICommentsService
     {
-        Task<List<Comment>> GetAsync();
-        Task<Comment> GetAsync(int id);
-        Task<int> CreateAsync(Comment comment);
-        Task UpdateAsync(Comment comment);
-        Task DeleteAsync(int id);
+        List<Comment> Get();
+        Comment Get(int id);
+        int Create(Comment comment);
+        void Update(Comment comment);
+        void Delete(int id);
         bool Exists(int id);
     }
 
@@ -26,22 +25,22 @@ namespace MiniaturesGallery.Services
             _logger = logger;
 
         }
-        public async Task<int> CreateAsync(Comment comment)
+        public int Create(Comment comment)
         {
             comment.CrateDate = DateTime.Now;
             _context.Add(comment);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
             return comment.ID;
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(int id)
         {
-            var comment = await _context.Comments.FirstOrDefaultAsync(m => m.ID == id);
+            var comment = _context.Comments.FirstOrDefault(m => m.ID == id);
 
             _logger.LogInformation($"Comment ID: {id} PostID: {comment.PostID} CommentID: {comment.CommentID} Of: {comment.UserID} DELETE invoked");
 
             _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public bool Exists(int id)
@@ -49,22 +48,22 @@ namespace MiniaturesGallery.Services
             return (_context.Comments?.Any(e => e.ID == id)).GetValueOrDefault();
         }
 
-        public async Task<List<Comment>> GetAsync()
+        public List<Comment> Get()
         {
-            return await _context.Comments.ToListAsync();
+            return _context.Comments.ToList();
         }
 
-        public async Task<Comment> GetAsync(int id)
+        public Comment Get(int id)
         {
-            return await _context.Comments.FirstOrDefaultAsync(m => m.ID == id);
+            return _context.Comments.FirstOrDefault(m => m.ID == id);
         }
 
-        public async Task UpdateAsync(Comment comment)
+        public void Update(Comment comment)
         {
-            Comment commentFromDB = await _context.Comments.FirstOrDefaultAsync(m => m.ID == comment.ID);
+            Comment commentFromDB = _context.Comments.FirstOrDefault(m => m.ID == comment.ID);
             commentFromDB.Body = comment.Body;
             _context.Update(commentFromDB);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
     }
 }

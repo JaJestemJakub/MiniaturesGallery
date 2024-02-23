@@ -22,7 +22,7 @@ namespace MiniaturesGallery.Controllers
         // GET: Rates
         public async Task<IActionResult> Index()
         {
-            return View(await _ratesService.GetAsync());
+            return View(_ratesService.Get());
         }
 
         // GET: Rates/Details/5
@@ -33,7 +33,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var rate = await _ratesService.GetAsync((int)id);
+            var rate = _ratesService.Get((int)id);
             if (rate == null)
             {
                 return NotFound();
@@ -56,7 +56,7 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _ratesService.CreateAsync(rate);
+                _ratesService.Create(rate);
 
                 return Redirect(HttpContext.Request.Headers["Referer"]);
             }
@@ -71,7 +71,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var rate = await _ratesService.GetAsync((int)id);
+            var rate = _ratesService.Get((int)id);
             if (rate == null)
             {
                 return NotFound();
@@ -95,7 +95,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var rateFromDB = await _ratesService.GetAsync((int)id);
+            var rateFromDB = _ratesService.Get((int)id);
             if (rateFromDB == null)
             {
                 return NotFound();
@@ -111,7 +111,7 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    await _ratesService.UpdateAsync(rate);
+                    _ratesService.Update(rate);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -137,7 +137,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var rate = await _ratesService.GetAsync((int)id);
+            var rate = _ratesService.Get((int)id);
             if (rate == null)
             {
                 return NotFound();
@@ -157,7 +157,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
         {
-            var rate = await _ratesService.GetAsync(id);
+            var rate = _ratesService.Get(id);
             if (rate != null)
             {
                 var isAuthorized = await _authorizationService.AuthorizeAsync(User, rate, Operations.Delete);
@@ -165,7 +165,7 @@ namespace MiniaturesGallery.Controllers
                 {
                     return Forbid();
                 }
-                await _ratesService.DeleteAsync(id);
+                _ratesService.Delete(id);
             }
 
             return RedirectToAction(nameof(Index));

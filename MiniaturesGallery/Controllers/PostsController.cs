@@ -2,15 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using MiniaturesGallery.Exceptions;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
 using MiniaturesGallery.Services;
 using MiniaturesGallery.ViewModels;
-using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace MiniaturesGallery.Controllers
 {
@@ -114,7 +110,7 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
-                int id = await _postService.CreateAsync(post, User.GetLoggedInUserId<string>());
+                int id = _postService.Create(post, User.GetLoggedInUserId<string>());
                 return RedirectToAction(nameof(Edit), new { id = id });
             }
             return View(post);
@@ -170,7 +166,7 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    await _postService.UpdateAsync(post);
+                    _postService.Update(post);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -225,7 +221,7 @@ namespace MiniaturesGallery.Controllers
                     return Forbid();
                 }
 
-                await _postService.DeleteAsync(id);
+                _postService.Delete(id);
             }
 
             return RedirectToAction(nameof(Index));
@@ -248,7 +244,7 @@ namespace MiniaturesGallery.Controllers
 
             if (ModelState.IsValid)
             {
-                await _attachmentsService.CreateAsync(postViewModel.Files, id, User.GetLoggedInUserId<string>());
+                _attachmentsService.Create(postViewModel.Files, id, User.GetLoggedInUserId<string>());
             }
             return RedirectToAction(nameof(Edit), new { id = id });
         }
@@ -257,7 +253,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAttachment([FromRoute] int id)
         {
-            Attachment att = await _attachmentsService.GetAsync(id);
+            Attachment att = _attachmentsService.Get(id);
 
             if (att == null)
             {
@@ -270,7 +266,7 @@ namespace MiniaturesGallery.Controllers
                 return Forbid();
             }
 
-            await _attachmentsService.DeleteAsync(id);
+            _attachmentsService.Delete(id);
             return RedirectToAction(nameof(Edit), new { id = att.PostID });
         }
     }

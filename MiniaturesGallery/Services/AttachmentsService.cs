@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.Extensions;
 using MiniaturesGallery.Models;
@@ -8,10 +7,11 @@ namespace MiniaturesGallery.Services
 {
     public interface IAttachmentsService
     {
-        Task CreateAsync(List<IFormFile>? Files, int postID, string UserID);
-        Task DeleteAsync(int id);
-        Task DeleteAllAsync(int postID);
-        Task<Attachment> GetAsync(int id);
+        void Create(List<IFormFile>? Files, int postID, string UserID);
+        void Create(Attachment att);
+        void Delete(int id);
+        void DeleteAll(int postID);
+        Attachment Get(int id);
     }
 
     public class AttachmentsService : IAttachmentsService
@@ -27,7 +27,7 @@ namespace MiniaturesGallery.Services
             _logger = logger;
         }
 
-        public async Task CreateAsync(List<IFormFile>? files, int postID, string UserID)
+        public void Create(List<IFormFile>? files, int postID, string UserID)
         {
             if (files != null && files.Count > 0)
             {
@@ -47,14 +47,20 @@ namespace MiniaturesGallery.Services
                         _context.Add(att);
                     }
                 }
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
 
-        public async Task DeleteAsync(int id)
+        public void Create(Attachment att)
         {
-            Attachment att = await _context.Attachments
-            .FirstAsync(x => x.ID == id);
+            _context.Add(att);
+            _context.SaveChanges();
+        }
+
+        public void Delete(int id)
+        {
+            Attachment att = _context.Attachments
+                .First(x => x.ID == id);
 
             _logger.LogInformation($"Attachment ID: {id} FileName: {att.FileName} PostID: {att.PostID} Of: {att.UserID} DELETE invoked");
 
@@ -65,14 +71,14 @@ namespace MiniaturesGallery.Services
 
             DeleteFileIfExistsThenDeleteFolderIfEmpty(FilePath, FolderPath);
 
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task DeleteAllAsync(int postID)
+        public void DeleteAll(int postID)
         {
-            var post = await _context.Posts
+            var post = _context.PostsAbs.OfType<Post>()
                 .Include(a => a.Attachments)
-                .FirstOrDefaultAsync(m => m.ID == postID);
+                .FirstOrDefault(m => m.ID == postID);
 
             if (post.Attachments != null && post.Attachments.Any())
             {
@@ -89,13 +95,13 @@ namespace MiniaturesGallery.Services
                 }
             }
 
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task<Attachment> GetAsync(int id)
+        public Attachment Get(int id)
         {
-            Attachment att = await _context.Attachments
-                .FirstAsync(x => x.ID == id);
+            Attachment att = _context.Attachments
+                .First(x => x.ID == id);
 
             return att;
         }

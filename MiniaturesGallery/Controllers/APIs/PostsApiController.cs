@@ -41,7 +41,7 @@ namespace MiniaturesGallery.Controllers.APIs
         [HttpPost]
         public async Task<ActionResult> Create([FromBody][Bind("ID,Topic,Text")] Post post)
         {
-            int id = await _postService.CreateAsync(post, User.GetLoggedInUserId<string>());
+            int id = _postService.Create(post, User.GetLoggedInUserId<string>());
 
             return Created($"PostsApiController/{id}", null);
         }
@@ -55,7 +55,7 @@ namespace MiniaturesGallery.Controllers.APIs
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
             if (!isAuthorized.Succeeded){ throw new AccessDeniedException("Access Denied"); }
 
-            await _postService.DeleteAsync(id);
+            _postService.Delete(id);
             return NoContent();
         }
 
@@ -68,7 +68,7 @@ namespace MiniaturesGallery.Controllers.APIs
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, postFromDB, Operations.Update);
             if (!isAuthorized.Succeeded) { throw new AccessDeniedException("Access Denied"); }
 
-            await _postService.UpdateAsync(post);
+            _postService.Update(post);
             return Ok();
         }
     }

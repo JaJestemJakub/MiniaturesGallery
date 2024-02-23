@@ -1,9 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using MiniaturesGallery.Data;
 using MiniaturesGallery.HelpClasses;
 using MiniaturesGallery.Models;
-using MiniaturesGallery.Models.Abstracts;
 
 namespace MiniaturesGallery.Services
 {
@@ -13,10 +11,11 @@ namespace MiniaturesGallery.Services
         IQueryable<Post> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID);
         IQueryable<Post> GetOfUser(string filtrUserID, string UserID);
         Post Get(int id, string UserID);
-        Task<int> CreateAsync(Post post, string UserID);
-        Task UpdateAsync(Post post);
-        Task DeleteAsync(int id);
+        int Create(Post post, string UserID);
+        void Update(Post post);
+        void Delete(int id);
         bool Exists(int id);
+        bool Any();
     }
 
     public class PostsService : IPostService
@@ -36,7 +35,7 @@ namespace MiniaturesGallery.Services
         {
             IQueryable<Post> posts;
 
-            posts = _context.Posts
+            posts = _context.PostsAbs.OfType<Post>()
                 .Include(a => a.Attachments)
                 .Include(a => a.User)
                 .AsQueryable()
@@ -62,7 +61,7 @@ namespace MiniaturesGallery.Services
         {
             IQueryable<Post> posts;
 
-            posts = _context.Posts
+            posts = _context.PostsAbs.OfType<Post>()
                     .Include(a => a.Attachments)
                     .Include(a => a.User)
                     .AsQueryable();
@@ -82,7 +81,7 @@ namespace MiniaturesGallery.Services
         {
             IQueryable<Post> posts;
             if (String.IsNullOrEmpty(searchString) == false)
-                posts = _context.Posts
+                posts = _context.PostsAbs.OfType<Post>()
                     .Include(a => a.Attachments)
                     .Include(a => a.User)
                     .AsQueryable()
@@ -90,7 +89,7 @@ namespace MiniaturesGallery.Services
                     || s.Text.Contains(searchString)
                     );
             else
-                posts = _context.Posts
+                posts = _context.PostsAbs.OfType<Post>()
                     .Include(a => a.Attachments)
                     .Include(a => a.User)
                     .AsQueryable();
@@ -129,7 +128,7 @@ namespace MiniaturesGallery.Services
 
         public Post Get(int id, string UserID)
         {
-            var post = _context.Posts
+            var post = _context.PostsAbs.OfType<Post>()
                 .Include(a => a.Attachments)
                 .Include(a => a.User)
                 .Include(a => a.Coments)
@@ -163,45 +162,50 @@ namespace MiniaturesGallery.Services
             return post;
         }
 
-        public async Task<int> CreateAsync(Post post, string UserID)
+        public int Create(Post post, string UserID)
         {
             post.CrateDate = DateTime.Now;
             post.UserID = UserID;
             _context.Add(post);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             return post.ID;
         }
 
-        public async Task UpdateAsync(Post post)
+        public void Update(Post post)
         {
-            Post postFromDB = await _context.Posts.FirstAsync(x => x.ID == post.ID);
+            Post postFromDB = _context.PostsAbs.OfType<Post>().First(x => x.ID == post.ID);
             postFromDB.Topic = post.Topic;
             postFromDB.Text = post.Text;
 
             _context.Update(postFromDB);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(int id)
         {
-            var post = await _context.Posts
+            var post = _context.PostsAbs.OfType<Post>()
                 .Include(a => a.Attachments)
                 .Include(a => a.User)
                 .Include(a => a.Coments)
                 .Include(a => a.Rates)
-                .FirstOrDefaultAsync(m => m.ID == id);
+                .FirstOrDefault(m => m.ID == id);
 
             _logger.LogInformation($"Post ID: {id} Of: {post.UserID} DELETE invoked");
 
-            await _attachmentsService.DeleteAllAsync(post.ID);
-            _context.Posts.Remove(post);
-            await _context.SaveChangesAsync();
+            _attachmentsService.DeleteAll(post.ID);
+            _context.PostsAbs.Remove(post);
+            _context.SaveChanges();
         }
 
         public bool Exists(int id)
         {
-            return _context.Posts.Any(e => e.ID == id);
+            return _context.PostsAbs.OfType<Post>().Any(e => e.ID == id);
+        }
+
+        public bool Any()
+        {
+            return _context.PostsAbs.Any();
         }
     }
 }

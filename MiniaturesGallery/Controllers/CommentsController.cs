@@ -22,7 +22,7 @@ namespace MiniaturesGallery.Controllers
         // GET: Comments
         public async Task<IActionResult> Index()
         {
-            return View(await _commentsService.GetAsync());
+            return View(_commentsService.Get());
         }
 
         // GET: Comments/Details/5
@@ -33,7 +33,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var comment = await _commentsService.GetAsync((int)id);
+            var comment = _commentsService.Get((int)id);
             if (comment == null)
             {
                 return NotFound();
@@ -56,7 +56,7 @@ namespace MiniaturesGallery.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _commentsService.CreateAsync(comment);
+                _commentsService.Create(comment);
                 return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = comment.PostID });
             }
             return RedirectToAction(nameof(PostsController.Details), typeof(PostsController).ControllerName(), new { ID = comment.PostID });
@@ -70,7 +70,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var comment = await _commentsService.GetAsync((int)id);
+            var comment = _commentsService.Get((int)id);
             if (comment == null)
             {
                 return NotFound();
@@ -94,7 +94,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            Comment commentFromDB = await _commentsService.GetAsync(comment.ID);
+            Comment commentFromDB = _commentsService.Get(comment.ID);
             if (commentFromDB == null)
             {
                 return NotFound();
@@ -109,7 +109,7 @@ namespace MiniaturesGallery.Controllers
             {
                 try
                 {
-                    await _commentsService.UpdateAsync(comment);
+                    _commentsService.Update(comment);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -135,7 +135,7 @@ namespace MiniaturesGallery.Controllers
                 return NotFound();
             }
 
-            var comment = await _commentsService.GetAsync((int)id);
+            var comment = _commentsService.Get((int)id);
             if (comment == null)
             {
                 return NotFound();
@@ -155,7 +155,7 @@ namespace MiniaturesGallery.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed([FromRoute] int id)
         {
-            var comment = await _commentsService.GetAsync(id);
+            var comment = _commentsService.Get(id);
             if (comment != null)
             {
                 var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, Operations.Delete);
@@ -164,7 +164,7 @@ namespace MiniaturesGallery.Controllers
                     return Forbid();
                 }
 
-                await _commentsService.DeleteAsync(id);
+                _commentsService.Delete(id);
             }
 
             return RedirectToAction(nameof(Index));
