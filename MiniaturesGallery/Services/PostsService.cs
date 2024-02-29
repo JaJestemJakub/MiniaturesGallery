@@ -7,12 +7,12 @@ namespace MiniaturesGallery.Services
 {
     public interface IPostService
     {
-        IQueryable<Post> GetAll();
-        IQueryable<Post> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID);
-        IQueryable<Post> GetOfUser(string filtrUserID, string UserID);
-        Post Get(int id, string UserID);
-        int Create(Post post, string UserID);
-        void Update(Post post);
+        IQueryable<PostAbs> GetAll();
+        IQueryable<PostAbs> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID);
+        IQueryable<PostAbs> GetOfUser(string filtrUserID, string UserID);
+        PostAbs Get(int id, string UserID);
+        int Create(PostAbs post, string UserID);
+        void Update(PostAbs post);
         void Delete(int id);
         bool Exists(int id);
         bool Any();
@@ -31,89 +31,150 @@ namespace MiniaturesGallery.Services
             _logger = logger;
         }
 
-        public IQueryable<Post> GetOfUser(string filtrUserID, string UserID)
+        public IQueryable<PostAbs> GetOfUser(string filtrUserID, string UserID)
         {
-            IQueryable<Post> posts;
+            IQueryable<PostAbs> posts;
 
-            posts = _context.PostsAbs.OfType<Post>()
-                .Include(a => a.Attachments)
+            posts = _context.PostsAbs
+                .Include(a => (a as Post).Attachments)
                 .Include(a => a.User)
                 .AsQueryable()
                 .Where(x => x.UserID == filtrUserID)
                 .OrderByDescending(x => x.ID);
 
-            foreach (Post post in posts)
+            foreach (PostAbs postAbs in posts)
             {
-                post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
-
-                post.Rates = new List<Rate>();
-                post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
-                if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == UserID))
+                if(postAbs is Post)
                 {
-                    post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
+                    Post post = postAbs as Post;
+                    post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
+
+                    post.Rates = new List<Rate>();
+                    post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+                    if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == UserID))
+                    {
+                        post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
+                    }
                 }
             }
 
             return posts;
         }
 
-        public IQueryable<Post> GetAll()
+        public IQueryable<PostAbs> GetAll()
         {
-            IQueryable<Post> posts;
+            IQueryable<PostAbs> posts;
 
-            posts = _context.PostsAbs.OfType<Post>()
-                    .Include(a => a.Attachments)
+            posts = _context.PostsAbs
+                    .Include(a => (a as Post).Attachments)
                     .Include(a => a.User)
                     .AsQueryable();
 
-            foreach (Post post in posts)
-            {
-                post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
 
-                post.Rates = new List<Rate>();
-                post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+            foreach (PostAbs postAbs in posts)
+            {
+                if (postAbs is Post)
+                {
+                    Post post = postAbs as Post;
+                    post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
+
+                    post.Rates = new List<Rate>();
+                    post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+                }
             }
 
             return posts;
         }
 
-        public IQueryable<Post> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID)
+        public IQueryable<PostAbs> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID)
         {
-            IQueryable<Post> posts;
+            IQueryable<PostAbs> postsAbs;
             if (String.IsNullOrEmpty(searchString) == false)
-                posts = _context.PostsAbs.OfType<Post>()
-                    .Include(a => a.Attachments)
+                postsAbs = _context.PostsAbs
+                    .Include(a => (a as Post).Attachments)
                     .Include(a => a.User)
                     .AsQueryable()
                     .Where(s => s.Topic.Contains(searchString)
                     || s.Text.Contains(searchString)
                     );
             else
-                posts = _context.PostsAbs.OfType<Post>()
-                    .Include(a => a.Attachments)
+                postsAbs = _context.PostsAbs
+                    .Include(a => (a as Post).Attachments)
                     .Include(a => a.User)
                     .AsQueryable();
 
             DateTime dateFromTmp = ((dateFrom == DateTime.MinValue || dateFrom is null) ? DateTime.Today.AddMonths(-1) : (DateTime)dateFrom);
             DateTime dateToTmp = ((dateTo == DateTime.MinValue || dateTo is null) ? DateTime.Today : (DateTime)dateTo);
             
-            posts = posts.Where(x => x.CrateDate >= dateFromTmp && x.CrateDate < dateToTmp.AddDays(1));
+            postsAbs = postsAbs.Where(x => x.CrateDate >= dateFromTmp && x.CrateDate < dateToTmp.AddDays(1));
 
             if (String.IsNullOrEmpty(orderByFilter) == false)
             {
                 bool desc = orderByFilter.EndsWith("_desc") ? true : false;
                 string sortProperty = orderByFilter.EndsWith("_desc") ? orderByFilter.Replace("_desc", "") : orderByFilter;
 
-                posts = posts.OrderBy(sortProperty, desc);
+                if(sortProperty == nameof(Post.Rating))
+                {
+                    postsAbs = postsAbs.OfType<Post>(); //only Post have Rating
+                    postsAbs = (postsAbs as IQueryable<Post>).OrderBy(sortProperty, desc);
+                }
+                else
+                {
+                    postsAbs = postsAbs.OrderBy(sortProperty, desc);
+                }
             }
             else
             {
-                posts = posts.OrderBy(nameof(Post.ID), true);
+                postsAbs = postsAbs.OrderBy(nameof(Post.ID), true);
             }
 
-            foreach (Post post in posts)
+            foreach (PostAbs postAbs in postsAbs)
             {
-                post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
+                if (postAbs is Post)
+                {
+                    Post post = postAbs as Post;
+                    post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
+
+                    post.Rates = new List<Rate>();
+                    post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
+                    if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == UserID))
+                    {
+                        post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
+                    }
+                }
+            }
+
+            return postsAbs;
+        }
+
+        public PostAbs Get(int id, string UserID)
+        {
+            var postAbs = _context.PostsAbs
+                .Include(a => (a as Post).Attachments)
+                .Include(a => a.User)
+                .Include(a => (a as Post).Coments)
+                .FirstOrDefault(m => m.ID == id);
+
+            if(postAbs is Post)
+            {
+                Post post = postAbs as Post;
+                if (post.Coments != null)
+                {
+                    foreach (var comment in post.Coments)
+                    {
+                        if (comment.UserID != null)
+                            comment.User = _context.Users.FirstOrDefault(x => x.Id == comment.UserID);
+                        if (comment.CommentID != null)
+                        {
+                            var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
+                            if (parent != null)
+                            {
+                                parent.Comments.Add(comment);
+                            }
+                            post.Coments.Remove(comment);
+                        }
+                    }
+                }
 
                 post.Rates = new List<Rate>();
                 post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
@@ -121,48 +182,14 @@ namespace MiniaturesGallery.Services
                 {
                     post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
                 }
+
+                return post;
             }
 
-            return posts;
+            return postAbs;
         }
 
-        public Post Get(int id, string UserID)
-        {
-            var post = _context.PostsAbs.OfType<Post>()
-                .Include(a => a.Attachments)
-                .Include(a => a.User)
-                .Include(a => a.Coments)
-                .FirstOrDefault(m => m.ID == id);
-
-            if(post.Coments != null)
-            {
-                foreach (var comment in post.Coments)
-                {
-                    if (comment.UserID != null)
-                        comment.User = _context.Users.FirstOrDefault(x => x.Id == comment.UserID);
-                    if (comment.CommentID != null)
-                    {
-                        var parent = post.Coments.FirstOrDefault(x => x.ID == comment.CommentID);
-                        if (parent != null)
-                        {
-                            parent.Comments.Add(comment);
-                        }
-                        post.Coments.Remove(comment);
-                    }
-                }
-            }
-
-            post.Rates = new List<Rate>();
-            post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
-            if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == UserID))
-            {
-                post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
-            }
-
-            return post;
-        }
-
-        public int Create(Post post, string UserID)
+        public int Create(PostAbs post, string UserID)
         {
             post.CrateDate = DateTime.Now;
             post.UserID = UserID;
@@ -172,9 +199,9 @@ namespace MiniaturesGallery.Services
             return post.ID;
         }
 
-        public void Update(Post post)
+        public void Update(PostAbs post)
         {
-            Post postFromDB = _context.PostsAbs.OfType<Post>().First(x => x.ID == post.ID);
+            PostAbs postFromDB = _context.PostsAbs.First(x => x.ID == post.ID);
             postFromDB.Topic = post.Topic;
             postFromDB.Text = post.Text;
 
@@ -184,11 +211,11 @@ namespace MiniaturesGallery.Services
 
         public void Delete(int id)
         {
-            var post = _context.PostsAbs.OfType<Post>()
-                .Include(a => a.Attachments)
+            var post = _context.PostsAbs
+                .Include(a => (a as Post).Attachments)
                 .Include(a => a.User)
-                .Include(a => a.Coments)
-                .Include(a => a.Rates)
+                .Include(a => (a as Post).Coments)
+                .Include(a => (a as Post).Rates)
                 .FirstOrDefault(m => m.ID == id);
 
             _logger.LogInformation($"Post ID: {id} Of: {post.UserID} DELETE invoked");
@@ -200,7 +227,7 @@ namespace MiniaturesGallery.Services
 
         public bool Exists(int id)
         {
-            return _context.PostsAbs.OfType<Post>().Any(e => e.ID == id);
+            return _context.PostsAbs.Any(e => e.ID == id);
         }
 
         public bool Any()

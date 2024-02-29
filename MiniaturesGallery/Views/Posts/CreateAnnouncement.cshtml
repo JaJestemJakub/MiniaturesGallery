@@ -1,15 +1,15 @@
-﻿@model MiniaturesGallery.Models.Post
+﻿@model MiniaturesGallery.Models.Announcement
 
 @{
     ViewData["Title"] = "Create";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h4>@Localizer["Post"]</h4>
+<h4>@Localizer["Announcement"]</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="CreateAnnouncement">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Topic" class="control-label"></label>
@@ -21,8 +21,13 @@
                 <textarea asp-for="Text" class="form-control" rows="4"></textarea>
                 <span asp-validation-for="Text" class="text-danger"></span>
             </div>
+            <div class="form-group mb-2">
+                <label asp-for="PrivateNote" class="control-label"></label>
+                <textarea asp-for="PrivateNote" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="PrivateNote" class="text-danger"></span>
+            </div>
             <div class="form-group">
-                <input type="submit" value="@Localizer["Create"]" class="btn btn-primary" />
+                <input type="submit" value="@Localizer["Create Announcement"]" class="btn btn-primary" />
             </div>
         </form>
     </div>

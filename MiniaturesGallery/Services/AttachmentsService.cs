@@ -76,26 +76,30 @@ namespace MiniaturesGallery.Services
 
         public void DeleteAll(int postID)
         {
-            var post = _context.PostsAbs.OfType<Post>()
-                .Include(a => a.Attachments)
+            var postabs = _context.PostsAbs
+                .Include(a => (a as Post).Attachments)
                 .FirstOrDefault(m => m.ID == postID);
 
-            if (post.Attachments != null && post.Attachments.Any())
+            if(postabs is Post)
             {
-                foreach (var att in post.Attachments)
+                Post post = postabs as Post;
+                if (post.Attachments != null && post.Attachments.Any())
                 {
-                    _logger.LogInformation($"Attachment ID: {att.ID} FileName: {att.FileName} PostID: {att.PostID} Of: {att.UserID} DELETE invoked");
+                    foreach (var att in post.Attachments)
+                    {
+                        _logger.LogInformation($"Attachment ID: {att.ID} FileName: {att.FileName} PostID: {att.PostID} Of: {att.UserID} DELETE invoked");
 
-                    _context.Attachments.Remove(att);
+                        _context.Attachments.Remove(att);
 
-                    string FilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.FullFileName);
-                    string FolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.PostID.ToString());
+                        string FilePath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.FullFileName);
+                        string FolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", att.PostID.ToString());
 
-                    DeleteFileIfExistsThenDeleteFolderIfEmpty(FilePath, FolderPath);
+                        DeleteFileIfExistsThenDeleteFolderIfEmpty(FilePath, FolderPath);
+                    }
                 }
-            }
 
-            _context.SaveChanges();
+                _context.SaveChanges();
+            }
         }
 
         public Attachment Get(int id)

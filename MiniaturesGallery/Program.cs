@@ -35,8 +35,8 @@ builder.Services.AddScoped<IPostService, PostsService>();
 builder.Services.AddScoped<IAttachmentsService, AttachmentsService>();
 builder.Services.AddScoped<IRatesService, RatesService>();
 builder.Services.AddScoped<ICommentsService, CommentsService>();
-builder.Services.AddScoped<ErrorHandlingMiddleware>();
-builder.Services.AddScoped<RequestTimeMiddleware>();
+//builder.Services.AddScoped<ErrorHandlingMiddleware>();
+//builder.Services.AddScoped<RequestTimeMiddleware>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -75,8 +75,8 @@ else
     app.UseHsts();
 }
 
-app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseMiddleware<RequestTimeMiddleware>();
+//app.UseMiddleware<ErrorHandlingMiddleware>();
+//app.UseMiddleware<RequestTimeMiddleware>();
 app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI(x => x.SwaggerEndpoint("/swagger/v1/swagger.json", "MiniaturesGallery"));

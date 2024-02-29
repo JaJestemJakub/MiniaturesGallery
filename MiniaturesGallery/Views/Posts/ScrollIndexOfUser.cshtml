@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MiniaturesGallery.Models.Post>
+﻿@model IEnumerable<MiniaturesGallery.Models.PostAbs>
 @{
     ViewData["Title"] = "ScrollIndex";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -12,150 +12,182 @@
     </div>
 </div>
 
-@foreach (Post post in Model)
+@foreach (PostAbs postAbs in Model)
 {
-    <div class="card mb-4">
-        <div class="card-body">
-            <div id="carouselImages@(post.ID)" class="carousel slide carousel-fade">
-                <div class="carousel-inner">
-                    @foreach (var att in post.Attachments)
-                    {
-                        string activeAttribute = "";
-                        if (att == post.Attachments.First())
-                            activeAttribute = "active";
-                        <div class="carousel-item @activeAttribute d-flex align-items-center justify-content-center" style="height: 500px">
-                            <a data-bs-toggle="modal" href="#imageModal_@att.ID">
-                                <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block w-80" style="max-height: 500px">
-                            </a>
-                        </div>
+    if (postAbs is Post)
+    {
+        Post post = postAbs as Post;
+        <div class="card mb-4">
+            <div class="card-body">
+                <div id="carouselImages@(post.ID)" class="carousel slide carousel-fade">
+                    <div class="carousel-inner">
+                        @foreach (var att in post.Attachments)
+                        {
+                            string activeAttribute = "";
+                            if (att == post.Attachments.First())
+                                activeAttribute = "active";
+                            <div class="carousel-item @activeAttribute d-flex align-items-center justify-content-center" style="height: 500px">
+                                <a data-bs-toggle="modal" href="#imageModal_@att.ID">
+                                    <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block w-80" style="max-height: 500px">
+                                </a>
+                            </div>
 
-                        <div class="modal fade" tabindex="-1" aria-hidden="true" id="imageModal_@att.ID">
-                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">@att.FileName</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
-                                    </div>
-                                    <div class="modal-body d-flex align-items-center justify-content-center">
-                                        <img src="~/Files/@att.FullFileName" alt="@att.FileName">
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
+                            <div class="modal fade" tabindex="-1" aria-hidden="true" id="imageModal_@att.ID">
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">@att.FileName</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Close"]"></button>
+                                        </div>
+                                        <div class="modal-body d-flex align-items-center justify-content-center">
+                                            <img src="~/Files/@att.FullFileName" alt="@att.FileName">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    }
-                </div>
-                <div class="d-flex justify-content-center">
-                    @{
-                        int iterator = 0;
-                        foreach (var att in post.Attachments)
-                        {
-                            string cssClass = "";
-                            string cssAria = "";
-                            if (att == post.Attachments.First())
-                            {
-                                cssClass = "active";
-                                cssAria = "true";
-                            }
-
-                            <button type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide-to="@iterator" class="@cssClass" aria-current="@cssAria">
-                                <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block" style="max-height: 50px; max-width: 50px">
-                            </button>
-                            iterator++;
                         }
-                    }
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        @{
+                            int iterator = 0;
+                            foreach (var att in post.Attachments)
+                            {
+                                string cssClass = "";
+                                string cssAria = "";
+                                if (att == post.Attachments.First())
+                                {
+                                    cssClass = "active";
+                                    cssAria = "true";
+                                }
+
+                                <button type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide-to="@iterator" class="@cssClass" aria-current="@cssAria">
+                                    <img src="~/Files/@att.FullFileName" alt="@att.FileName" class="d-block" style="max-height: 50px; max-width: 50px">
+                                </button>
+                                iterator++;
+                            }
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">@Localizer["Previous"]</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">@Localizer["Next"]</span>
+                    </button>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">@Localizer["Previous"]</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselImages@(post.ID)" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">@Localizer["Next"]</span>
-                </button>
             </div>
-        </div>
-        <div class="card-footer">
-            <h6><a asp-action="ScrollIndexOfUser" asp-route-filtrUserID="@post.UserID">@(post.User.UserName)</a></h6>
-            <h6>@(post.CrateDate)</h6>
-            <div class="text-center align-items-center">
-                <h1 style="display: inline;">
-                    @post.Topic
-                </h1>
-                @if (User.GetLoggedInUserId<string>() == post.UserID)
-                {
-                    <h4 style="display: inline;">
-                        [<a asp-action="Edit" asp-route-id="@post.ID">@Localizer["Edit"]</a>]
-                    </h4>
-                    <h4 style="display: inline;">
-                        [<a asp-action="Delete" asp-route-id="@post.ID" class="text-danger">@Localizer["Delete"]</a>]
-                    </h4>
-                }
-            </div>
-            <div class="text-center align-items-center">
-                <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-info">(@Localizer["See Details"])</a></small>
-            </div>
-            <h4 style="white-space: pre-line">@post.Text</h4>
-            @{
-                string action = "Create", checked5 = "", checked4 = "", checked3 = "", checked2 = "", checked1 = "";
-                int rating = (int)Math.Floor(post.Rating);
-                if (post.Rates.Any())
-                {
-                    action = "Edit";
-                    rating = post.Rates.First().Rating;
-                }
-                switch (rating)
-                {
-                    case 1:
-                        checked1 = "checked";
-                        break;
-                    case 2:
-                        checked2 = "checked";
-                        break;
-                    case 3:
-                        checked3 = "checked";
-                        break;
-                    case 4:
-                        checked4 = "checked";
-                        break;
-                    case 5:
-                        checked5 = "checked";
-                        break;
-                }
-            }
-            <form asp-action="@action" asp-controller="Rates" method="post" asp-route-id="@(post.Rates.Any() ? post.Rates.First().ID : 0)">
-                <div class="text-center">
-                    @Localizer["Rating"]: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
-                </div>
-                <div class="rating justify-content-center">
-                    @if (post.Rates.Any())
+            <div class="card-footer">
+                <h6><a asp-action="ScrollIndexOfUser" asp-route-filtrUserID="@post.UserID">@(post.User.UserName)</a></h6>
+                <h6>@(post.CrateDate)</h6>
+                <div class="text-center align-items-center">
+                    <h1 style="display: inline;">
+                        @post.Topic
+                    </h1>
+                    @if (User.GetLoggedInUserId<string>() == post.UserID)
                     {
-                        <input hidden name="@(nameof(Rate.ID))" value="@post.Rates.First().ID" />
+                        <h4 style="display: inline;">
+                            [<a asp-action="Edit" asp-route-id="@post.ID">@Localizer["Edit"]</a>]
+                        </h4>
+                        <h4 style="display: inline;">
+                            [<a asp-action="Delete" asp-route-id="@post.ID" class="text-danger">@Localizer["Delete"]</a>]
+                        </h4>
                     }
-                    <input hidden name="@(nameof(Rate.PostID))" value="@post.ID" />
-                    <input hidden name="@(nameof(Rate.UserID))" value="@(User.GetLoggedInUserId<string>())" />
-                    <input type="radio" name="rating" value="5" id="@(post.ID)_5" @checked5 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
-                    <label for="@(post.ID)_5">☆</label>
-                    <input type="radio" name="rating" value="4" id="@(post.ID)_4" @checked4 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
-                    <label for="@(post.ID)_4">☆</label>
-                    <input type="radio" name="rating" value="3" id="@(post.ID)_3" @checked3 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
-                    <label for="@(post.ID)_3">☆</label>
-                    <input type="radio" name="rating" value="2" id="@(post.ID)_2" @checked2 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
-                    <label for="@(post.ID)_2">☆</label>
-                    <input type="radio" name="rating" value="1" id="@(post.ID)_1" @checked1 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
-                    <label for="@(post.ID)_1">☆</label>
                 </div>
-                <div class="text-center mb-2">
-                    <input type="submit" value="@Localizer["Submit"]" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton@(post.ID)" />
+                <div class="text-center align-items-center">
+                    <small><a asp-action="Details" asp-route-id="@post?.ID" class="text-info">(@Localizer["See Details"])</a></small>
                 </div>
-            </form>
-            <div class="text-center">
-                @Localizer["Comments"]: @post.NoOfComments.ToString()
+                <h4 style="white-space: pre-line">@post.Text</h4>
+                @{
+                    string action = "Create", checked5 = "", checked4 = "", checked3 = "", checked2 = "", checked1 = "";
+                    int rating = (int)Math.Floor(post.Rating);
+                    if (post.Rates.Any())
+                    {
+                        action = "Edit";
+                        rating = post.Rates.First().Rating;
+                    }
+                    switch (rating)
+                    {
+                        case 1:
+                            checked1 = "checked";
+                            break;
+                        case 2:
+                            checked2 = "checked";
+                            break;
+                        case 3:
+                            checked3 = "checked";
+                            break;
+                        case 4:
+                            checked4 = "checked";
+                            break;
+                        case 5:
+                            checked5 = "checked";
+                            break;
+                    }
+                }
+                <form asp-action="@action" asp-controller="Rates" method="post" asp-route-id="@(post.Rates.Any() ? post.Rates.First().ID : 0)">
+                    <div class="text-center">
+                        @Localizer["Rating"]: @post.Rating.ToString("n2") (@post.NoOfRates.ToString())
+                    </div>
+                    <div class="rating justify-content-center">
+                        @if (post.Rates.Any())
+                        {
+                            <input hidden name="@(nameof(Rate.ID))" value="@post.Rates.First().ID" />
+                        }
+                        <input hidden name="@(nameof(Rate.PostID))" value="@post.ID" />
+                        <input hidden name="@(nameof(Rate.UserID))" value="@(User.GetLoggedInUserId<string>())" />
+                        <input type="radio" name="rating" value="5" id="@(post.ID)_5" @checked5 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                        <label for="@(post.ID)_5">☆</label>
+                        <input type="radio" name="rating" value="4" id="@(post.ID)_4" @checked4 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                        <label for="@(post.ID)_4">☆</label>
+                        <input type="radio" name="rating" value="3" id="@(post.ID)_3" @checked3 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                        <label for="@(post.ID)_3">☆</label>
+                        <input type="radio" name="rating" value="2" id="@(post.ID)_2" @checked2 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                        <label for="@(post.ID)_2">☆</label>
+                        <input type="radio" name="rating" value="1" id="@(post.ID)_1" @checked1 onclick="$('#collapseSubmitRateButton@(post.ID)').collapse('show');">
+                        <label for="@(post.ID)_1">☆</label>
+                    </div>
+                    <div class="text-center mb-2">
+                        <input type="submit" value="@Localizer["Submit"]" class="btn btn-primary btn-sm collapse" id="collapseSubmitRateButton@(post.ID)" />
+                    </div>
+                </form>
+                <div class="text-center">
+                    @Localizer["Comments"]: @post.NoOfComments.ToString()
+                </div>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="text-center align-items-center">
+                    <h1 style="display: inline;">
+                        @postAbs.Topic
+                    </h1>
+                    @if (User.GetLoggedInUserId<string>() == postAbs.UserID)
+                    {
+                        <h4 style="display: inline;">
+                            [<a asp-action="Edit" asp-route-id="@postAbs.ID">@Localizer["Edit"]</a>]
+                        </h4>
+                        <h4 style="display: inline;">
+                            [<a asp-action="Delete" asp-route-id="@postAbs.ID" class="text-danger">@Localizer["Delete"]</a>]
+                        </h4>
+                    }
+                </div>
+                <div class="text-center align-items-center">
+                    <small><a asp-action="Details" asp-route-id="@postAbs?.ID" class="text-info">(@Localizer["See Details"])</a></small>
+                </div>
+            </div>
+            <div class="card-footer">
+                <h6><a asp-action="ScrollIndexOfUser" asp-route-filtrUserID="@postAbs.UserID">@(postAbs.User.UserName)</a></h6>
+                <h6>@(postAbs.CrateDate)</h6>
+            </div>
+        </div>
+    }
 }
 
 <partial name="_Pagination" />

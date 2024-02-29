@@ -40,7 +40,7 @@ namespace MiniaturesGallery.Controllers
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
             var tmpList = _postService.Get(searchString, orderByFilter, dateFrom, dateTo, User.GetLoggedInUserId<string>());
-            var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
+            var PgList = await PaginatedList<PostAbs>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
             PgList.Action = nameof(PostsController.Index);
 
             return View(PgList);
@@ -60,7 +60,7 @@ namespace MiniaturesGallery.Controllers
             ViewBag.DateTo = dateTo.ToString("yyyy-MM-dd");
 
             var tmpList = _postService.Get(searchString, orderByFilter, dateFrom, dateTo, User.GetLoggedInUserId<string>());
-            var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
+            var PgList = await PaginatedList<PostAbs>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
             PgList.Action = nameof(PostsController.Index);
 
             return View(PgList);
@@ -72,7 +72,7 @@ namespace MiniaturesGallery.Controllers
         public async Task<IActionResult> ScrollIndexOfUser([FromQuery] string filtrUserID, [FromQuery] int? pageNumber)
         {
             var tmpList = _postService.GetOfUser(filtrUserID, User.GetLoggedInUserId<string>());
-            var PgList = await PaginatedList<Post>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
+            var PgList = await PaginatedList<PostAbs>.CreateAsync(tmpList, pageNumber ?? 1, _pageSize);
             PgList.Action = nameof(PostsController.ScrollIndexOfUser);
             PgList.UserID = filtrUserID;
             ViewBag.UserName = _userManager.FindByIdAsync(filtrUserID).Result.UserName;
@@ -97,8 +97,27 @@ namespace MiniaturesGallery.Controllers
             return View(post);
         }
 
-        // GET: Posts/Create
-        public IActionResult Create()
+        // GET: Posts/CreatePost
+        public IActionResult CreatePost()
+        {
+            return View();
+        }
+
+        // POST: Posts/CreatePost
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreatePost([FromForm][Bind("ID,Topic,Text")] Post post)
+        {
+            if (ModelState.IsValid)
+            {
+                int id = _postService.Create(post, User.GetLoggedInUserId<string>());
+                return RedirectToAction(nameof(Edit), new { id = id });
+            }
+            return View(post);
+        }
+
+        // GET: Posts/CreateAnnouncement
+        public IActionResult CreateAnnouncement()
         {
             return View();
         }
@@ -106,7 +125,7 @@ namespace MiniaturesGallery.Controllers
         // POST: Posts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromForm][Bind("ID,Topic,Text")] Post post)
+        public async Task<IActionResult> CreateAnnouncement([FromForm][Bind("ID,Topic,Text,PrivateNote")] Announcement post)
         {
             if (ModelState.IsValid)
             {
@@ -136,7 +155,7 @@ namespace MiniaturesGallery.Controllers
                 return Forbid();
             }
 
-            PostEditViewModel viewModel = new PostEditViewModel { Post = post };
+            PostEditViewModel viewModel = new PostEditViewModel { PostAbs = post };
             return View(viewModel);
         }
 

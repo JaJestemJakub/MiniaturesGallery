@@ -23,7 +23,7 @@ namespace MiniaturesGallery.Data
             }
         }
 
-        private static async void SeedDB(IServiceProvider serviceProvider, string uid)
+        private static void SeedDB(IServiceProvider serviceProvider, string uid)
         {
             var postsService = serviceProvider.GetService<IPostService>();
             var commentsService = serviceProvider.GetService<ICommentsService>();
@@ -31,10 +31,18 @@ namespace MiniaturesGallery.Data
             var attachmentsService = serviceProvider.GetService<IAttachmentsService>();
             var hostingEnvironment = serviceProvider.GetService<IWebHostEnvironment>();
 
-            if(postsService.Any() == false)
+            if (postsService.Any() == false)
             {
-                //TODO: Add also annoucment
-                Post examplePost = new Post 
+                Announcement exampleAnnouncement = new Announcement
+                {
+                    Topic = "First Announcement",
+                    Text = "Example Announcement from admin account.",
+                    PrivateNote = "Hidden note from admin account."
+                };
+
+                int announcementID = postsService.Create(exampleAnnouncement, uid);
+
+                Post examplePost = new Post
                 {
                     Topic = "First Post",
                     Text = "Example Post from admin account."
@@ -42,7 +50,7 @@ namespace MiniaturesGallery.Data
 
                 int postID = postsService.Create(examplePost, uid);
 
-                Comment comment = new Comment 
+                Comment comment = new Comment
                 {
                     Body = "Body of first Comment.",
                     PostID = postID,

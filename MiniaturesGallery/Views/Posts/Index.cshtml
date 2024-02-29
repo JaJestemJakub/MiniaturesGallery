@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MiniaturesGallery.Models.Post>
+﻿@model IEnumerable<MiniaturesGallery.Models.PostAbs>
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -107,7 +107,7 @@
                    asp-route-SearchString="@ViewBag.SearchString"
                    asp-route-DateFrom="@ViewBag.DateFrom"
                    asp-route-DateTo="@ViewBag.DateTo">
-                    @Html.DisplayNameFor(model => model.Rating)@if (@ViewBag.OrderByFilter == nameof(Post.Rating))
+                    @Html.DisplayNameFor(model => (model as Post).Rating)@if (@ViewBag.OrderByFilter == nameof(Post.Rating))
                     {<text>&#9660;</text>}@if (@ViewBag.OrderByFilter == nameof(Post.Rating) + "_desc")
                     {<text>&#9650;</text>}
                 </a>
@@ -140,7 +140,14 @@
                 @Html.DisplayFor(modelItem => item.Text)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Rating)
+                @if(item is Post)
+                {
+                    @Html.DisplayFor(modelItem => (item as Post).Rating)
+                }
+                else
+                {
+                    <span>-</span>    
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CrateDate)

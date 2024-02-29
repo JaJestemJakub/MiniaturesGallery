@@ -297,4 +297,16 @@
   <data name="Welcome" xml:space="preserve">
     <value>Witamy</value>
   </data>
+  <data name="Private Note" xml:space="preserve">
+    <value>Prywatna Notatka</value>
+  </data>
+  <data name="Announcement" xml:space="preserve">
+    <value>Ogłoszenie</value>
+  </data>
+  <data name="Create Announcement" xml:space="preserve">
+    <value>Stwórz Ogłoszenie</value>
+  </data>
+  <data name="Add Announcement" xml:space="preserve">
+    <value>Dodaj Ogłoszenie</value>
+  </data>
 </root>

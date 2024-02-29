@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MiniaturesGallery.Models.Post>
+﻿@model IEnumerable<MiniaturesGallery.Models.PostAbs>
 
 @{
     @using MiniaturesGallery.HelpClasses
@@ -41,7 +41,7 @@
     }
 }
 @{
-    var PgList = (Model as PaginatedList<Post>);
+    var PgList = (Model as PaginatedList<PostAbs>);
     int pageIndex = PgList.PageIndex;
     int totalPages = PgList.TotalPages;
     var prevDisabled = !PgList.HasPreviousPage ? "disabled" : "";
