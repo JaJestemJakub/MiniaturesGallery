@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FileTypeChecker;
+using FileTypeChecker.Extensions;
+using Microsoft.EntityFrameworkCore;
 using MiniaturesGallery.Data;
-using MiniaturesGallery.Extensions;
+//using MiniaturesGallery.Extensions;
 using MiniaturesGallery.Models;
 
 namespace MiniaturesGallery.Services
@@ -33,7 +35,9 @@ namespace MiniaturesGallery.Services
             {
                 foreach (IFormFile f in files)
                 {
-                    if (f.IsImage())
+                    var fileStream = f.OpenReadStream();
+                    var isRecognizableType = FileTypeValidator.IsTypeRecognizable(fileStream);
+                    if (isRecognizableType && fileStream.IsImage())
                     {
                         string FolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Files", postID.ToString());
                         if (Directory.Exists(FolderPath) == false)
@@ -45,6 +49,10 @@ namespace MiniaturesGallery.Services
                             f.CopyTo(fs);
                         Attachment att = new Attachment(UserID) { FileName = f.FileName, FullFileName = FolderSlashFile, PostID = postID };
                         _context.Add(att);
+                    }
+                    else
+                    {
+                        //TODO: what if file is not image
                     }
                 }
                 _context.SaveChanges();
