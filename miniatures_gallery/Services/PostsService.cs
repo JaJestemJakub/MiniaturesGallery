@@ -8,12 +8,12 @@ namespace MiniaturesGallery.Services
     public interface IPostService
     {
         IQueryable<PostAbs> GetAll();
-        IQueryable<PostAbs> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID);
-        IQueryable<PostAbs> GetOfUser(string filtrUserID, string UserID);
+        IQueryable<PostAbs> GetAll(string UserID, string? searchString = null, string? orderByFilter = null, DateTime? dateFrom = null, DateTime? dateTo = null);
+        IQueryable<PostAbs> GetAllOfUser(string filtrUserID, string UserID);
         PostAbs Get(int id, string UserID);
         int Create(PostAbs post, string UserID);
         void Update(PostAbs post);
-        void Delete(int id);
+        void Delete(int id, IAttachmentsService _attachmentsService);
         bool Exists(int id);
         bool Any();
     }
@@ -21,17 +21,15 @@ namespace MiniaturesGallery.Services
     public class PostsService : IPostService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAttachmentsService _attachmentsService;
         private readonly ILogger<AttachmentsService> _logger;
 
-        public PostsService(ApplicationDbContext context, IAttachmentsService attachmentsService, ILogger<AttachmentsService> logger)
+        public PostsService(ApplicationDbContext context, ILogger<AttachmentsService> logger)
         {
-            _attachmentsService = attachmentsService;
             _context = context;
             _logger = logger;
         }
 
-        public IQueryable<PostAbs> GetOfUser(string filtrUserID, string UserID)
+        public IQueryable<PostAbs> GetAllOfUser(string filtrUserID, string UserID)
         {
             IQueryable<PostAbs> posts;
 
@@ -42,9 +40,16 @@ namespace MiniaturesGallery.Services
                 .Where(x => x.UserID == filtrUserID)
                 .OrderByDescending(x => x.ID);
 
+            posts = IncludeNoOfCommentsAndRatesIn(posts, UserID);
+
+            return posts;
+        }
+
+        private IQueryable<PostAbs> IncludeNoOfCommentsAndRatesIn(IQueryable<PostAbs> posts, string UserID)
+        {
             foreach (PostAbs postAbs in posts)
             {
-                if(postAbs is Post)
+                if (postAbs is Post)
                 {
                     Post post = postAbs as Post;
                     post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
@@ -86,7 +91,7 @@ namespace MiniaturesGallery.Services
             return posts;
         }
 
-        public IQueryable<PostAbs> Get(string? searchString, string? orderByFilter, DateTime? dateFrom, DateTime? dateTo, string UserID)
+        public IQueryable<PostAbs> GetAll(string UserID, string? searchString = null, string? orderByFilter = null, DateTime? dateFrom = null, DateTime? dateTo = null)
         {
             IQueryable<PostAbs> postsAbs;
             if (String.IsNullOrEmpty(searchString) == false)
@@ -132,14 +137,15 @@ namespace MiniaturesGallery.Services
             {
                 if (postAbs is Post)
                 {
-                    Post post = postAbs as Post;
+                    Post post = (Post)postAbs;
                     post.NoOfComments = _context.Comments.Count(x => x.PostID == post.ID);
 
                     post.Rates = new List<Rate>();
                     post.NoOfRates = _context.Rates.Count(x => x.PostID == post.ID);
                     if (_context.Rates.Any(x => x.PostID == post.ID && x.UserID == UserID))
                     {
-                        post.Rates.Add(_context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID));
+                        Rate tmpRate = _context.Rates.First(x => x.PostID == post.ID && x.UserID == UserID);
+                        post.Rates.Add(tmpRate);
                     }
                 }
             }
@@ -209,7 +215,7 @@ namespace MiniaturesGallery.Services
             _context.SaveChanges();
         }
 
-        public void Delete(int id)
+        public void Delete(int id, IAttachmentsService attachmentsService)
         {
             var post = _context.PostsAbs
                 .Include(a => (a as Post).Attachments)
@@ -220,7 +226,7 @@ namespace MiniaturesGallery.Services
 
             _logger.LogInformation($"Post ID: {id} Of: {post.UserID} DELETE invoked");
 
-            _attachmentsService.DeleteAll(post.ID);
+            attachmentsService.DeleteAll(post.ID);
             _context.PostsAbs.Remove(post);
             _context.SaveChanges();
         }

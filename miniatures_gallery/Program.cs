@@ -11,6 +11,7 @@ using MiniaturesGallery.Middleware;
 using MiniaturesGallery.Services;
 using NLog.Web;
 using System.Globalization;
+using System.IO.Abstractions;
 
 internal class Program
 {
@@ -39,6 +40,7 @@ internal class Program
         builder.Services.AddScoped<IAttachmentsService, AttachmentsService>();
         builder.Services.AddScoped<IRatesService, RatesService>();
         builder.Services.AddScoped<ICommentsService, CommentsService>();
+        builder.Services.AddScoped<IFileSystem, System.IO.Abstractions.FileSystem>();
         builder.Services.AddScoped<ErrorHandlingMiddleware>();
         builder.Services.AddScoped<RequestTimeMiddleware>();
         builder.Services.AddControllersWithViews();
@@ -112,7 +114,7 @@ internal class Program
 
             var adminUserPw = builder.Configuration.GetValue<string>("SeedAdminUserPW");
 
-            await SeedData.Initialize(services, adminUserPw);
+            await SeedData.Initialize(services, new FileSystem(), adminUserPw);
         }
 
         app.Run();

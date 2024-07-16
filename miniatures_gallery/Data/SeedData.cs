@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting.Internal;
 using MiniaturesGallery.Models;
 using MiniaturesGallery.Services;
+using System.IO.Abstractions;
 
 namespace MiniaturesGallery.Data
 {
     public static class SeedData
     {
-        public static async Task Initialize(IServiceProvider serviceProvider, string adminUserPw)
+        public static async Task Initialize(IServiceProvider serviceProvider, IFileSystem fileSystem, string adminUserPw)
         {
             using (var context = new ApplicationDbContext(
                 serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
@@ -19,11 +19,11 @@ namespace MiniaturesGallery.Data
 
                 var adminID = await EnsureUser(serviceProvider, adminUserPw, "admin@admin.com");
                 await EnsureRole(serviceProvider, adminID, HelpClasses.Constants.ContactAdministratorsRole);
-                SeedDB(serviceProvider, adminID);
+                SeedDB(serviceProvider, fileSystem, adminID);
             }
         }
 
-        private static void SeedDB(IServiceProvider serviceProvider, string uid)
+        private static void SeedDB(IServiceProvider serviceProvider, IFileSystem fileSystem, string uid)
         {
             var postsService = serviceProvider.GetService<IPostService>();
             var commentsService = serviceProvider.GetService<ICommentsService>();
@@ -78,16 +78,16 @@ namespace MiniaturesGallery.Data
                 string fileName1 = "default1.jpg";
                 string fileName2 = "default2.jpg";
 
-                string FolderPath = Path.Combine(hostingEnvironment.WebRootPath, "Files", postID.ToString());
-                if (Directory.Exists(FolderPath) == false)
-                    Directory.CreateDirectory(FolderPath);
-                string FolderSlashFile1 = Path.Combine(postID.ToString(), fileName1);
-                string FilePath1 = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile1);
-                string FolderSlashFile2 = Path.Combine(postID.ToString(), fileName2);
-                string FilePath2 = Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile2);
+                string FolderPath = fileSystem.Path.Combine(hostingEnvironment.WebRootPath, "Files", postID.ToString());
+                if (fileSystem.Directory.Exists(FolderPath) == false)
+                    fileSystem.Directory.CreateDirectory(FolderPath);
+                string FolderSlashFile1 = fileSystem.Path.Combine(postID.ToString(), fileName1);
+                string FilePath1 = fileSystem.Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile1);
+                string FolderSlashFile2 = fileSystem.Path.Combine(postID.ToString(), fileName2);
+                string FilePath2 = fileSystem.Path.Combine(hostingEnvironment.WebRootPath, "Files", FolderSlashFile2);
 
-                File.Copy(Path.Combine(hostingEnvironment.WebRootPath, fileName1), FilePath1);
-                File.Copy(Path.Combine(hostingEnvironment.WebRootPath, fileName2), FilePath2);
+                fileSystem.File.Copy(fileSystem.Path.Combine(hostingEnvironment.WebRootPath, fileName1), FilePath1);
+                fileSystem.File.Copy(fileSystem.Path.Combine(hostingEnvironment.WebRootPath, fileName2), FilePath2);
 
                 Attachment attachment1 = new Attachment
                 {
@@ -107,7 +107,6 @@ namespace MiniaturesGallery.Data
                 attachmentsService.Create(attachment1);
                 attachmentsService.Create(attachment2);
             }
-
         }
 
         private static async Task<string> EnsureUser(IServiceProvider serviceProvider, string userPw, string UserName)

@@ -18,6 +18,8 @@ namespace MiniaturesGallery.Controllers
 
         public IActionResult Index()
         {
+            //tmp option for good first page presentation 
+            //return Redirect("/Posts/ScrollIndex");
             return View();
         }
 

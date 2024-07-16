@@ -18,6 +18,7 @@
     <_SelectedScaffolderCategoryPath>root/Common/RazorPage</_SelectedScaffolderCategoryPath>
     <WebStackScaffolding_DbContextDialogWidth>650</WebStackScaffolding_DbContextDialogWidth>
   </PropertyGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Update="Resources\SharedResource.pl.resx">
       <SubType>Designer</SubType>

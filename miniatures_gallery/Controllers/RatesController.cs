@@ -22,7 +22,7 @@ namespace MiniaturesGallery.Controllers
         // GET: Rates
         public async Task<IActionResult> Index()
         {
-            return View(_ratesService.Get());
+            return View(_ratesService.GetAll());
         }
 
         // GET: Rates/Details/5

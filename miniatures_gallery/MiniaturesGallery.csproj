@@ -7,6 +7,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="File.TypeChecker" Version="4.1.1" />
+    <PackageReference Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" Version="3.24.1" />
+    <PackageReference Include="JavaScriptEngineSwitcher.V8" Version="3.24.2" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" Version="7.4.5" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.8" />
@@ -20,16 +23,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
+    <PackageReference Include="System.IO.Abstractions" Version="21.0.22" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="DB\" />
     <Folder Include="wwwroot\Files\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="wwwroot\SubComment.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="DB\MiniaturesGallerySQLite.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

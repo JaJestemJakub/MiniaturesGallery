@@ -22,7 +22,7 @@ namespace MiniaturesGallery.Controllers
         // GET: Comments
         public async Task<IActionResult> Index()
         {
-            return View(_commentsService.Get());
+            return View(_commentsService.GetAll());
         }
 
         // GET: Comments/Details/5

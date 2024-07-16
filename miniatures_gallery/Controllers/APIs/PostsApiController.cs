@@ -15,11 +15,13 @@ namespace MiniaturesGallery.Controllers.APIs
     {
         private readonly IPostService _postService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IAttachmentsService _attachmentsService;
 
-        public PostsApiController(IPostService postService, IAuthorizationService authorizationService, UserManager<IdentityUser> userManager)
+        public PostsApiController(IPostService postService, IAuthorizationService authorizationService, IAttachmentsService attachmentsService, UserManager<IdentityUser> userManager)
         {
             _postService = postService;
             _authorizationService = authorizationService;
+            _attachmentsService = attachmentsService;
         }
 
         [HttpGet("{id}")]
@@ -33,7 +35,7 @@ namespace MiniaturesGallery.Controllers.APIs
         [HttpGet]
         public ActionResult<IEnumerable<Post>> GetSortedBy([FromQuery] string? searchString, [FromQuery] string? orderByFilter, [FromQuery] DateTime? dateFrom, [FromQuery] DateTime? dateTo)
         {
-            var posts = _postService.Get(searchString, orderByFilter, dateFrom, dateTo, User.GetLoggedInUserId<string>());
+            var posts = _postService.GetAll(User.GetLoggedInUserId<string>(), searchString, orderByFilter, dateFrom, dateTo);
 
             return Ok(posts);
         }
@@ -55,7 +57,7 @@ namespace MiniaturesGallery.Controllers.APIs
             var isAuthorized = await _authorizationService.AuthorizeAsync(User, post, Operations.Delete);
             if (!isAuthorized.Succeeded){ throw new AccessDeniedException("Access Denied"); }
 
-            _postService.Delete(id);
+            _postService.Delete(id, _attachmentsService);
             return NoContent();
         }
 

@@ -6,7 +6,7 @@ namespace MiniaturesGallery.Services
 {
     public interface IRatesService
     {
-        List<Rate> Get();
+        IQueryable<Rate> GetAll();
         Rate Get(int id);
         int Create(Rate rate);
         void Update(Rate rate);
@@ -22,7 +22,6 @@ namespace MiniaturesGallery.Services
         {
             _context = context;
             _logger = logger;
-
         }
 
         public int Create(Rate rate)
@@ -52,9 +51,9 @@ namespace MiniaturesGallery.Services
             return _context.Rates.Any(e => e.ID == id);
         }
 
-        public List<Rate> Get()
+        public IQueryable<Rate> GetAll()
         {
-            return _context.Rates.ToList();
+            return _context.Rates.AsQueryable();
         }
 
         public Rate Get(int id)

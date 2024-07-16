@@ -6,7 +6,7 @@ namespace MiniaturesGallery.Services
 {
     public interface ICommentsService
     {
-        List<Comment> Get();
+        IQueryable<Comment> GetAll();
         Comment Get(int id);
         int Create(Comment comment);
         void Update(Comment comment);
@@ -35,12 +35,21 @@ namespace MiniaturesGallery.Services
 
         public void Delete(int id)
         {
-            var comment = _context.Comments.FirstOrDefault(m => m.ID == id);
+            var comment = _context.Comments.Include(x => x.Comments).FirstOrDefault(m => m.ID == id);
 
-            _logger.LogInformation($"Comment ID: {id} PostID: {comment.PostID} CommentID: {comment.CommentID} Of: {comment.UserID} DELETE invoked");
+            if(comment.Comments.Any())
+            {
+                comment.Body = "Deleted.";
+                _context.Update(comment);
+                _context.SaveChanges();
+            }
+            else
+            {
+                _logger.LogInformation($"Comment ID: {id} PostID: {comment.PostID} CommentID: {comment.CommentID} Of: {comment.UserID} DELETE invoked");
 
-            _context.Comments.Remove(comment);
-            _context.SaveChanges();
+                _context.Comments.Remove(comment);
+                _context.SaveChanges();
+            }
         }
 
         public bool Exists(int id)
@@ -48,9 +57,9 @@ namespace MiniaturesGallery.Services
             return (_context.Comments?.Any(e => e.ID == id)).GetValueOrDefault();
         }
 
-        public List<Comment> Get()
+        public IQueryable<Comment> GetAll()
         {
-            return _context.Comments.ToList();
+            return _context.Comments.AsQueryable();
         }
 
         public Comment Get(int id)
